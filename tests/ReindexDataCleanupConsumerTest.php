@@ -2,7 +2,7 @@
 
 namespace go1\util_index\tests;
 
-use go1\index\tests\reindex\PortalIndexTest;
+use go1\core\customer\portal\index\tests\PortalIndexTest;
 use go1\util\es\mock\EsEnrolmentMockTrait;
 use go1\util\es\mock\EsEventMockTrait;
 use go1\util\es\mock\EsLoMockTrait;

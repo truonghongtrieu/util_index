@@ -2,8 +2,8 @@
 
 namespace go1\util_index;
 
+use go1\core\learning_record\enrolment\index\ManualRecordReindex;
 use go1\core\learning_record\enrolment\index\PlanReindex;
-use go1\index\domain\reindex\handler\ManualRecordReindex;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
