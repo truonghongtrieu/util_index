@@ -44,7 +44,7 @@ use go1\index\domain\reindex\handler\ManualRecordReindex;
 use go1\index\domain\reindex\handler\PortalConfigReindex;
 use go1\index\domain\reindex\handler\PortalReindex;
 use go1\index\domain\reindex\handler\UserReindex;
-use go1\index\products\App;
+use go1\index\products\IndexService;
 use go1\util\DB;
 use go1\util\es\Schema;
 use go1\util\portal\PortalHelper;
@@ -292,7 +292,7 @@ class TaskRepository
                 }
 
                 $items[] = [
-                    'routingKey' => App::WORKER_TASK_PROCESS,
+                    'routingKey' => IndexService::WORKER_TASK_PROCESS,
                     'body'       => $body = [
                         'handler'             => $task->currentHandler,
                         'id'                  => $task->id,
@@ -305,7 +305,7 @@ class TaskRepository
             ++$task->currentOffset;
         }
         $this->update($task);
-        $this->mqClient->queue($items, App::WORKER_TASK_BULK, ['id' => $task->id]);
+        $this->mqClient->queue($items, IndexService::WORKER_TASK_BULK, ['id' => $task->id]);
     }
 
     private function handlerIsCompleted(Task $task, string $handler)

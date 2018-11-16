@@ -2,7 +2,7 @@
 
 namespace go1\util_index\tests;
 
-use go1\index\products\App;
+use go1\index\products\IndexService;
 use go1\util\es\Schema;
 use go1\util\schema\mock\PortalMockTrait;
 use go1\util\schema\mock\UserMockTrait;
@@ -19,7 +19,7 @@ class ReindexBulkMessageTest extends IndexTestCase
     private   $portalId                = 100;
     private   $portalName              = 'z.go1.co';
 
-    protected function appInstall(App $app)
+    protected function appInstall(IndexService $app)
     {
         parent::appInstall($app);
 

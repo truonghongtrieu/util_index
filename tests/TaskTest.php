@@ -3,7 +3,7 @@
 namespace go1\util_index\tests;
 
 use go1\index\domain\reindex\handler\UserReindex;
-use go1\index\products\App;
+use go1\index\products\IndexService;
 use go1\util\eck\mock\EckMockTrait;
 use go1\util\payment\mock\PaymentMockTrait;
 use go1\util\schema\mock\AssignmentMockTrait;
@@ -37,7 +37,7 @@ class TaskTest extends IndexTestCase
     private $accountIds;
     private $taskId;
 
-    public function appInstall(App $app)
+    public function appInstall(IndexService $app)
     {
         parent::appInstall($app);
 
@@ -67,7 +67,7 @@ class TaskTest extends IndexTestCase
         $task = $repo->load($this->taskId);
         $this->assertEquals(UserReindex::NAME, $task->currentHandler);
         $this->assertEquals(1, $task->removeRedundant);
-        $msg = $this->messages[App::WORKER_TASK_BULK][0][0]['body'];
+        $msg = $this->messages[IndexService::WORKER_TASK_BULK][0][0]['body'];
         $this->assertEquals($msg['handler'], $task->currentHandler);
         $this->assertEquals($msg['id'], $task->id);
         $this->assertEquals($msg['currentOffset'], 0);
@@ -150,7 +150,7 @@ class TaskTest extends IndexTestCase
 
         $req = Request::create("/consume?jwt=" . UserHelper::ROOT_JWT, 'POST');
         $req->request->replace([
-            'routingKey' => App::WORKER_TASK_PROCESS,
+            'routingKey' => IndexService::WORKER_TASK_PROCESS,
             'body'       => (object) [
                 'id'                  => $this->taskId,
                 'handler'             => $task->currentHandler,
@@ -174,6 +174,6 @@ class TaskTest extends IndexTestCase
         $res = $app->handle($req);
         $this->assertEquals(204, $res->getStatusCode());
 
-        $this->assertCount(1, $this->messages[App::WORKER_TASK_BULK]);
+        $this->assertCount(1, $this->messages[IndexService::WORKER_TASK_BULK]);
     }
 }

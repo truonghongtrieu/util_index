@@ -5,7 +5,7 @@ namespace go1\util_index\worker;
 use Doctrine\DBAL\Connection;
 use Exception;
 use go1\clients\MqClient;
-use go1\index\products\App;
+use go1\index\products\IndexService;
 use go1\util\contract\ConsumerInterface;
 use go1\util_index\HistoryRepository;
 use go1\util_index\task\TaskRepository;
@@ -40,18 +40,18 @@ class TaskConsumer implements ConsumerInterface
 
     public function aware(string $event): bool
     {
-        return in_array($event, [App::WORKER_TASK_PROCESS, App::WORKER_TASK_BULK]);
+        return in_array($event, [IndexService::WORKER_TASK_PROCESS, IndexService::WORKER_TASK_BULK]);
     }
 
     public function consume(string $routingKey, stdClass $data, stdClass $context = null): bool
     {
         switch ($routingKey) {
 
-            case App::WORKER_TASK_PROCESS:
+            case IndexService::WORKER_TASK_PROCESS:
                 $this->process($data);
                 break;
 
-            case App::WORKER_TASK_BULK:
+            case IndexService::WORKER_TASK_BULK:
                 $this->onBulkComplete($data, $context);
                 break;
         }

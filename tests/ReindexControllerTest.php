@@ -12,7 +12,7 @@ use go1\core\lo\index\LoContentSharingConsumer;
 use go1\core\lo\index\LoReindex;
 use go1\core\lo\index\LoShareConsumer;
 use go1\index\domain\reindex\handler\AccountReindex;
-use go1\index\products\App;
+use go1\index\products\IndexService;
 use go1\util\award\AwardEnrolmentStatuses;
 use go1\util\award\AwardHelper;
 use go1\util\award\AwardItemTypes;
@@ -279,7 +279,7 @@ class ReindexControllerTest extends IndexTestCase
         }
     }
 
-    protected function appInstall(App $app)
+    protected function appInstall(IndexService $app)
     {
         ini_set('xdebug.max_nesting_level', 1000);
         parent::appInstall($app);

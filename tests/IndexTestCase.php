@@ -11,7 +11,7 @@ use go1\clients\EventClient;
 use go1\clients\LoClient;
 use go1\clients\MqClient;
 use go1\core\lo\event_li\index\tests\EventSchema;
-use go1\index\products\App;
+use go1\index\products\IndexService;
 use go1\util\DB;
 use go1\util\es\mock\EsInstallTrait;
 use go1\util\es\Schema;
@@ -47,14 +47,14 @@ abstract class IndexTestCase extends TestCase
     protected $messages;
     protected $logs;
 
-    protected function client(App $app): Client
+    protected function client(IndexService $app): Client
     {
         return $app['go1.client.es'];
     }
 
-    protected function getApp(): App
+    protected function getApp(): IndexService
     {
-        /** @var App $app */
+        /** @var IndexService $app */
         $app = require __DIR__ . '/../public/index.php';
         $app['waitForCompletion'] = true;
 
@@ -136,7 +136,7 @@ abstract class IndexTestCase extends TestCase
         return $app;
     }
 
-    protected function mockMqClient(App $app)
+    protected function mockMqClient(IndexService $app)
     {
         $app->extend('go1.client.mq', function () {
             $mqClient = $this->getMockBuilder(MqClient::class)->disableOriginalConstructor()->setMethods(['queue', 'publish'])->getMock();
@@ -159,7 +159,7 @@ abstract class IndexTestCase extends TestCase
         });
     }
 
-    protected function mockMqClientToDoConsume(App $app)
+    protected function mockMqClientToDoConsume(IndexService $app)
     {
         $app->extend('go1.client.mq', function () use ($app) {
             $mock = $this
@@ -173,7 +173,7 @@ abstract class IndexTestCase extends TestCase
                 ->method('queue')
                 ->willReturnCallback(
                     function ($body, $routingKey, $context) use ($app) {
-                        if (App::WORKER_TASK_BULK == $routingKey) {
+                        if (IndexService::WORKER_TASK_BULK == $routingKey) {
                             foreach ($body as $msg) {
                                 $req = Request::create('/consume?jwt=' . UserHelper::ROOT_JWT, 'POST');
                                 $req->request->replace(['routingKey' => $msg['routingKey'], 'body' => (object) $msg['body']]);
@@ -207,7 +207,7 @@ abstract class IndexTestCase extends TestCase
         return [Schema::INDEX];
     }
 
-    protected function appInstall(App $app)
+    protected function appInstall(IndexService $app)
     {
         $app->extend('go1.client.lo', function () {
             $client = $this
@@ -284,12 +284,12 @@ abstract class IndexTestCase extends TestCase
         ]);
     }
 
-    protected function db(App $app): Connection
+    protected function db(IndexService $app): Connection
     {
         return $app['dbs']['default'];
     }
 
-    protected function taskRepository(App $app): TaskRepository
+    protected function taskRepository(IndexService $app): TaskRepository
     {
         return $app['task.repository'];
     }

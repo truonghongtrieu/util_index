@@ -2,7 +2,7 @@
 
 namespace go1\util_index\tests;
 
-use go1\index\products\App;
+use go1\index\products\IndexService;
 use go1\util\es\Schema;
 use go1\util\queue\Queue;
 use go1\util\schema\mock\PortalMockTrait;
@@ -16,7 +16,7 @@ class ConsumerMiddlewareTest extends IndexTestCase
     private $portalId;
     private $legacyPortalId;
 
-    protected function appInstall(App $app)
+    protected function appInstall(IndexService $app)
     {
         parent::appInstall($app);
 

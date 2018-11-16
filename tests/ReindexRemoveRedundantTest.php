@@ -10,7 +10,7 @@ use go1\core\lo\index\LoContentSharingReindex;
 use go1\core\lo\index\LoReindex;
 use go1\core\lo\index\LoShareConsumer;
 use go1\core\lo\index\LoShareReindex;
-use go1\index\products\App;
+use go1\index\products\IndexService;
 use go1\util\enrolment\EnrolmentTypes;
 use go1\util\es\mock\EsEnrolmentMockTrait;
 use go1\util\es\mock\EsEventMockTrait;
@@ -32,7 +32,7 @@ class ReindexRemoveRedundantTest extends IndexTestCase
     private $portalBase1;
     private $portalBase2;
 
-    protected function appInstall(App $app)
+    protected function appInstall(IndexService $app)
     {
         parent::appInstall($app);
 
