@@ -2,13 +2,12 @@
 
 namespace go1\util_index;
 
-use go1\index\controller\InstallController;
-use go1\index\controller\ReindexHandlersController;
-use go1\index\controller\StatsController;
-use go1\index\controller\TaskController;
-use go1\index\domain\worker\RemoveRedundantDataConsumer;
 use go1\util\consume\ConsumeController;
 use go1\util\location\LocationRepository;
+use go1\util_index\controller\InstallController;
+use go1\util_index\controller\ReindexHandlersController;
+use go1\util_index\controller\StatsController;
+use go1\util_index\controller\TaskController;
 use go1\util_index\task\TaskRepository;
 use go1\util_index\worker\InstallConsumer;
 use go1\util_index\worker\TaskConsumer;
@@ -153,7 +152,7 @@ class UtilIndexServiceProvider implements ServiceProviderInterface, BootableProv
         };
 
         $c['consumer.remove_redundant_data'] = function (Container $c) {
-            return new RemoveRedundantDataConsumer(
+            return new ReindexDataCleanupConsumer(
                 $c['dbs']['go1_write'],
                 $c['go1.client.es'],
                 $c['history.repository'],

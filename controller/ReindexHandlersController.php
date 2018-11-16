@@ -1,10 +1,10 @@
 <?php
 
-namespace go1\index\controller;
+namespace go1\util_index\controller;
 
-use go1\index\domain\reindex\handler\ReindexInterface;
 use go1\util\AccessChecker;
 use go1\util\Error;
+use go1\util_index\ReindexInterface;
 use Pimple\Container;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\JsonResponse;

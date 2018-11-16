@@ -2,8 +2,8 @@
 
 namespace go1\util_index\tests;
 
-use go1\index\App;
 use go1\index\domain\reindex\handler\UserReindex;
+use go1\index\products\App;
 use go1\util\eck\mock\EckMockTrait;
 use go1\util\payment\mock\PaymentMockTrait;
 use go1\util\schema\mock\AssignmentMockTrait;

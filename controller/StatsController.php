@@ -1,6 +1,6 @@
 <?php
 
-namespace go1\index\controller;
+namespace go1\util_index\controller;
 
 use go1\util\AccessChecker;
 use go1\util\Error;

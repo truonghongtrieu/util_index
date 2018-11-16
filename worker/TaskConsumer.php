@@ -5,7 +5,7 @@ namespace go1\util_index\worker;
 use Doctrine\DBAL\Connection;
 use Exception;
 use go1\clients\MqClient;
-use go1\index\App;
+use go1\index\products\App;
 use go1\util\contract\ConsumerInterface;
 use go1\util_index\HistoryRepository;
 use go1\util_index\task\TaskRepository;
