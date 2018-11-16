@@ -1,13 +1,12 @@
 <?php
 
-namespace go1\index\products;
+namespace go1\util_index;
 
 use go1\app\App as GO1;
 use go1\clients\UtilCoreClientServiceProvider;
 use go1\util\Service;
 use go1\util\UtilCoreServiceProvider;
 use go1\util\UtilServiceProvider;
-use go1\util_index\UtilIndexServiceProvider;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class IndexService extends GO1

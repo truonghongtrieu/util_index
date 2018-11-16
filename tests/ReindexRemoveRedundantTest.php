@@ -10,7 +10,6 @@ use go1\core\lo\index\LoContentSharingReindex;
 use go1\core\lo\index\LoReindex;
 use go1\core\lo\index\LoShareConsumer;
 use go1\core\lo\index\LoShareReindex;
-use go1\index\products\IndexService;
 use go1\util\enrolment\EnrolmentTypes;
 use go1\util\es\mock\EsEnrolmentMockTrait;
 use go1\util\es\mock\EsEventMockTrait;
@@ -18,6 +17,7 @@ use go1\util\es\mock\EsLoMockTrait;
 use go1\util\es\Schema;
 use go1\util\portal\PortalHelper;
 use go1\util\schema\mock\PortalMockTrait;
+use go1\util_index\IndexService;
 use go1\util_index\task\Task;
 
 class ReindexRemoveRedundantTest extends IndexTestCase

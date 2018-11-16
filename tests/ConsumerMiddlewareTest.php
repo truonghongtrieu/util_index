@@ -2,11 +2,11 @@
 
 namespace go1\util_index\tests;
 
-use go1\index\products\IndexService;
 use go1\util\es\Schema;
 use go1\util\queue\Queue;
 use go1\util\schema\mock\PortalMockTrait;
 use go1\util\user\UserHelper;
+use go1\util_index\IndexService;
 use Symfony\Component\HttpFoundation\Request;
 
 class ConsumerMiddlewareTest extends IndexTestCase
