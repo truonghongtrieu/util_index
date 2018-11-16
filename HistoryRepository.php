@@ -1,0 +1,39 @@
+<?php
+
+namespace go1\util_index;
+
+use Doctrine\DBAL\Connection;
+
+class HistoryRepository
+{
+    private $db;
+
+    public function __construct(Connection $db)
+    {
+        $this->db = $db;
+    }
+
+    public function write($type, $id, $status, $data = null, $timestamp = null)
+    {
+        $this->db->insert('index_history', [
+            'type'      => $type,
+            'id'        => $id,
+            'status'    => $status,
+            'data'      => !$data ? null : (is_string($data) ? $data : json_encode($data)),
+            'timestamp' => $timestamp ?: time(),
+        ]);
+    }
+
+    public function bulkLog(array $response)
+    {
+        if ($response['errors']) {
+            foreach ($response['items'] as $item) {
+                foreach ($item as $action => $data) {
+                    if (isset($data['error'])) {
+                        $this->write($data['_type'], $data['_id'], $data['status'], $data['error']);
+                    }
+                }
+            }
+        }
+    }
+}

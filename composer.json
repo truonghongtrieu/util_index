@@ -1,0 +1,23 @@
+{
+  "name":              "go1/util_index",
+  "prefer-stable":     true,
+  "minimum-stability": "stable",
+  "autoload":          {
+    "psr-4": {
+      "go1\\util_index\\": "./"
+    }
+  },
+  "require":           {
+    "ext-json":                    "*",
+    "ext-pdo":                     "*",
+    "beberlei/assert":             "^2.5",
+    "ezyang/htmlpurifier":         "^4.7.0",
+    "elasticsearch/elasticsearch": "^5.0",
+    "go1/app":                     "dev-master",
+    "go1/util":                    "dev-master",
+    "go1/util_core":               "dev-master",
+    "go1/util_core_clients":       "dev-master",
+    "monolog/monolog":             "^1.19.0",
+    "ongr/elasticsearch-dsl":      "^5.0"
+  }
+}
