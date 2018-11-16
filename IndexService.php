@@ -38,4 +38,24 @@ class IndexService extends GO1
             $this->register($serviceProvider);
         }
     }
+
+    public static function needMaster(): bool
+    {
+        $need = true;
+
+        if ('POST' == ($_SERVER['REQUEST_METHOD'] ?? null)) {
+            if (!empty($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/consume') === 0) {
+                $input = file_get_contents('php://input');
+                $data = $input ? json_decode($input, true) : [];
+                $routingKey = $data['routingKey'] ?? '';
+                if (is_string($routingKey)) {
+                    if (in_array($routingKey, [IndexService::WORKER_TASK_PROCESS, IndexService::WORKER_TASK_BULK])) {
+                        $need = false;
+                    }
+                }
+            }
+        }
+
+        return $need;
+    }
 }
