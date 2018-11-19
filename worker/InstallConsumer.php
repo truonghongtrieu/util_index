@@ -7,7 +7,7 @@ use go1\util\contract\ConsumerInterface;
 use go1\util\portal\PortalChecker;
 use go1\util\portal\PortalHelper;
 use go1\util_index\ElasticSearchRepository;
-use go1\util_index\UtilIndexServiceProvider;
+use go1\util_index\IndexServiceProvider;
 use stdClass;
 
 class InstallConsumer implements ConsumerInterface
@@ -29,13 +29,13 @@ class InstallConsumer implements ConsumerInterface
 
     public function aware(string $event): bool
     {
-        return in_array($event, [UtilIndexServiceProvider::INDEX_INSTALL_PORTAL]);
+        return in_array($event, [IndexServiceProvider::INDEX_INSTALL_PORTAL]);
     }
 
     public function consume(string $routingKey, stdClass $data, stdClass $context = null): bool
     {
         switch ($routingKey) {
-            case UtilIndexServiceProvider::INDEX_INSTALL_PORTAL:
+            case IndexServiceProvider::INDEX_INSTALL_PORTAL:
                 if ($portal = PortalHelper::load($this->go1, $data->portalId)) {
                     if (!$this->portalChecker->isLegacy($portal)) {
                         $this->repository->installPortalIndex($data->portalId);

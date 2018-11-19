@@ -26,13 +26,17 @@ class HistoryRepository
 
     public function bulkLog(array $response)
     {
-        if ($response['errors']) {
-            foreach ($response['items'] as $item) {
-                foreach ($item as $action => $data) {
-                    if (isset($data['error'])) {
-                        $this->write($data['_type'], $data['_id'], $data['status'], $data['error']);
-                    }
+        if (empty($response['errors'])) {
+            return null;
+        }
+
+        foreach ($response['items'] as $item) {
+            foreach ($item as $action => $data) {
+                if (empty($data['error'])) {
+                    continue;
                 }
+
+                $this->write($data['_type'], $data['_id'], $data['status'], $data['error']);
             }
         }
     }

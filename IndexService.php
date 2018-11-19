@@ -29,7 +29,7 @@ class IndexService extends GO1
             ->register(new UtilCoreServiceProvider)
             ->register(new UtilCoreClientServiceProvider)
             ->register(new UtilServiceProvider)
-            ->register(new UtilIndexServiceProvider)
+            ->register(new IndexServiceProvider)
             ->get('/', function () {
                 return new JsonResponse(['service' => static::NAME, 'version' => static::VERSION, 'time' => time()]);
             });

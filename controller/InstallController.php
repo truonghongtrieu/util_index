@@ -10,7 +10,7 @@ use go1\util\DB;
 use go1\util\es\Schema as Index;
 use go1\util\portal\PortalStatuses;
 use go1\util_index\IndexSchema;
-use go1\util_index\UtilIndexServiceProvider;
+use go1\util_index\IndexServiceProvider;
 
 class InstallController
 {
@@ -55,7 +55,7 @@ class InstallController
             ->execute();
 
         while ($portalId = $q->fetchColumn()) {
-            $this->mqClient->queue(['portalId' => $portalId], UtilIndexServiceProvider::INDEX_INSTALL_PORTAL);
+            $this->mqClient->queue(['portalId' => $portalId], IndexServiceProvider::INDEX_INSTALL_PORTAL);
         }
 
         return DB::install($this->db, [

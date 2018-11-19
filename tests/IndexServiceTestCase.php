@@ -25,12 +25,16 @@ abstract class IndexServiceTestCase extends TestCase
     protected $isUnitTestCase          = false;
     protected $messages;
     protected $logs;
+    protected $sqlite;
 
     protected function getDatabases()
     {
+        $this->sqlite = DriverManager::getConnection(['url' => 'sqlite://sqlite::memory:']);
+
         return [
-            'default' => $db = DriverManager::getConnection(['url' => 'sqlite://sqlite::memory:']),
-            'go1'     => $db,
+            'default'   => $this->sqlite,
+            'go1'       => $this->sqlite,
+            'go1_write' => $this->sqlite,
         ];
     }
 
