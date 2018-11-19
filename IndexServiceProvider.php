@@ -3,10 +3,8 @@
 namespace go1\util_index;
 
 use go1\util\consume\ConsumeController;
-use go1\util\location\LocationRepository;
 use go1\util_index\controller\InstallController;
 use go1\util_index\task\TaskRepository;
-use go1\util_index\worker\InstallConsumer;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 use Silex\Api\BootableProviderInterface;
@@ -14,17 +12,10 @@ use Silex\Application;
 
 class IndexServiceProvider implements ServiceProviderInterface, BootableProviderInterface
 {
-    const INDEX_INSTALL_PORTAL = 'worker.index.install-portal';
-
     public function register(Container $c)
     {
         $c['ctrl.install'] = function (Container $c) {
-            return new InstallController(
-                $c['dbs']['default'],
-                $c['dbs']['go1_write'],
-                $c['go1.client.es'],
-                $c['go1.client.mq']
-            );
+            return new InstallController($c['dbs']['default'], $c['dbs']['go1_write'], $c['go1.client.es'], $c['go1.client.mq']);
         };
 
         $c['ctrl.consumer'] = function (Container $c) {
@@ -33,10 +24,6 @@ class IndexServiceProvider implements ServiceProviderInterface, BootableProvider
 
         $c['history.repository'] = function (Container $c) {
             return new HistoryRepository($c['dbs']['default']);
-        };
-
-        $c['consumer.install'] = function (Container $c) {
-            return new InstallConsumer($c['dbs']['go1_write'], $c['repository.es'], $c['portal_checker']);
         };
 
         $c['consumer.lo.arguments'] = function (Container $c) {
