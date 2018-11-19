@@ -10,7 +10,7 @@ use go1\util_index\IndexService;
 use go1\util_index\task\Task;
 use Symfony\Component\HttpFoundation\Request;
 
-class ReindexBulkMessageServiceTest extends IndexServiceTestCase
+class ReindexBulkMessageTest extends IndexServiceTestCase
 {
     use UserMockTrait;
     use PortalMockTrait;

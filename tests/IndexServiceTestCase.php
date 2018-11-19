@@ -51,47 +51,20 @@ abstract class IndexServiceTestCase extends TestCase
         return $app['go1.client.es'];
     }
 
+    protected function getDatabases()
+    {
+        return [
+            'default' => $db = DriverManager::getConnection(['url' => 'sqlite://sqlite::memory:']),
+            'go1'     => $db,
+        ];
+    }
+
     protected function getApp(): IndexService
     {
         /** @var IndexService $app */
         $app = require __DIR__ . '/../public/index.php';
         $app['waitForCompletion'] = true;
-
-        $app['dbs'] = $app->extend('dbs', function () {
-            return [
-                'default'          => $db = DriverManager::getConnection(['url' => 'sqlite://sqlite::memory:']),
-                'go1'              => $db,
-                'assignment'       => $db,
-                'social'           => $db,
-                'mail'             => $db,
-                'portal'           => $db,
-                'eck'              => $db,
-                'payment'          => $db,
-                'quiz'             => $db,
-                'collection'       => $db,
-                'enrolment'        => $db,
-                'credit'           => $db,
-                'award'            => $db,
-                'vote'             => $db,
-                'contract'         => $db,
-                'policy'           => $db,
-                'staff'            => $db,
-                'event'            => $db,
-                'go1_write'        => $db,
-                'assignment_write' => $db,
-                'social_write'     => $db,
-                'mail_write'       => $db,
-                'portal_write'     => $db,
-                'eck_write'        => $db,
-                'payment_write'    => $db,
-                'quiz_write'       => $db,
-                'enrolment_write'  => $db,
-                'credit_write'     => $db,
-                'award_write'      => $db,
-                'vote_write'       => $db,
-                'contract_write'   => $db,
-            ];
-        });
+        $app['dbs'] = $app->extend('dbs', function () { return $this->getDatabases(); });
 
         $app->extend('history.repository', function () {
             $history = $this->getMockBuilder(HistoryRepository::class)->disableOriginalConstructor()->setMethods(['write', 'bulkLog'])->getMock();

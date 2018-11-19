@@ -20,7 +20,7 @@ use go1\util\schema\mock\PortalMockTrait;
 use go1\util_index\IndexService;
 use go1\util_index\task\Task;
 
-class ReindexRemoveRedundantServiceTest extends IndexServiceTestCase
+class ReindexRemoveRedundantTest extends IndexServiceTestCase
 {
     use EsLoMockTrait;
     use EsEnrolmentMockTrait;

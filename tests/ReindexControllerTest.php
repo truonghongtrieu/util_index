@@ -47,7 +47,7 @@ use go1\util_index\task\Task;
 use go1\util_index\task\TaskRepository;
 use Symfony\Component\HttpFoundation\Request;
 
-class ReindexControllerServiceTest extends IndexServiceTestCase
+class ReindexControllerTest extends IndexServiceTestCase
 {
     use UserMockTrait;
     use PortalMockTrait;

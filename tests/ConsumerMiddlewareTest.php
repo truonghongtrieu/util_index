@@ -9,7 +9,7 @@ use go1\util\user\UserHelper;
 use go1\util_index\IndexService;
 use Symfony\Component\HttpFoundation\Request;
 
-class ConsumerMiddlewareServiceTest extends IndexServiceTestCase
+class ConsumerMiddlewareTest extends IndexServiceTestCase
 {
     use PortalMockTrait;
 
