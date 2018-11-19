@@ -2,7 +2,7 @@
 
 namespace go1\util_index\tests;
 
-use go1\core\customer\portal\index\tests\PortalIndexTest;
+use go1\core\customer\portal\index\tests\PortalIndexServiceTest;
 use go1\util\es\mock\EsEnrolmentMockTrait;
 use go1\util\es\mock\EsEventMockTrait;
 use go1\util\es\mock\EsLoMockTrait;
@@ -11,7 +11,7 @@ use go1\util\es\Schema;
 use go1\util_index\ReindexDataCleanupConsumer;
 use go1\util_index\ReindexServiceProvider;
 
-class ReindexDataCleanupConsumerTest extends PortalIndexTest
+class ReindexDataCleanupConsumerTest extends PortalIndexServiceTest
 {
     use EsLoMockTrait;
     use EsEnrolmentMockTrait;

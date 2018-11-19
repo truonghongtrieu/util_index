@@ -17,7 +17,7 @@ use go1\util_index\IndexService;
 use GuzzleHttp\Client;
 use Symfony\Component\HttpFoundation\Request;
 
-class TaskTest extends IndexTestCase
+class TaskServiceTest extends IndexServiceTestCase
 {
     use UserMockTrait;
     use PortalMockTrait;

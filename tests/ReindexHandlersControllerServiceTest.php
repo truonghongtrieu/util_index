@@ -5,7 +5,7 @@ namespace go1\util_index\tests;
 use go1\util\user\UserHelper;
 use Symfony\Component\HttpFoundation\Request;
 
-class ReindexHandlersControllerTest extends IndexTestCase
+class ReindexHandlersControllerServiceTest extends IndexServiceTestCase
 {
     protected function indices()
     {

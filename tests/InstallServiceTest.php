@@ -6,7 +6,7 @@ use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
 use go1\util\es\Schema;
 
-class InstallTest extends IndexTestCase
+class InstallServiceTest extends IndexServiceTestCase
 {
     public function test()
     {

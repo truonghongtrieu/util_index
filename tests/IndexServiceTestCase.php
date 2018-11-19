@@ -36,14 +36,13 @@ use go1\util_index\task\TaskRepository;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-abstract class IndexTestCase extends TestCase
+abstract class IndexServiceTestCase extends TestCase
 {
     use InstallTrait;
     use EsInstallTrait;
 
     protected $mockMqClientThenConsume = false;
-
-    protected $isUnitTestCase = false;
+    protected $isUnitTestCase          = false;
     protected $messages;
     protected $logs;
 
