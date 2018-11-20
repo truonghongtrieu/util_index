@@ -180,13 +180,13 @@ class TaskRepository
         }
 
         $task->stats = $this->stats($task);
-
-        dump($task->stats);
-        exit;
-
         foreach ($task->stats as $handlerName => $num) {
-            $handler = $this->getHandler($handlerName);
-            $limit = isset($handler::$limit) ? $handler::$limit : $task->limit;
+            $limit = $task->limit;
+
+            if ($handler = $this->getHandler($handlerName)) {
+                $limit = isset($handler::$limit) ? $handler::$limit : $task->limit;
+            }
+
             $task->stats[$handlerName] = ceil($num / $limit);
         }
 
@@ -198,9 +198,6 @@ class TaskRepository
 
     public function verify(Task $task)
     {
-        dump($task);
-        exit;
-
         # ---------------------
         # generate unit-of-works
         # ---------------------
@@ -270,24 +267,16 @@ class TaskRepository
         return ($task->processedItems / $task->totalItems) * 100;
     }
 
-    /**
-     * @param string $name
-     * @return ReindexInterface|null
-     */
-    public function getHandler(string $name)
+    public function getHandler(string $name): ?ReindexInterface
     {
-        $handlerName = "reindex.handler.$name";
-        if ($this->container->offsetExists($handlerName)) {
-            return $this->container[$handlerName];
-        }
-
-        return null;
+        return $this->container["reindex.handler.$name"] ?? null;
     }
 
     public function stats(Task $task)
     {
         foreach ($task->handlers as $name) {
-            $stats[$name] = (int) $this->getHandler($name)->count($task);
+            $handler = $this->getHandler($name);
+            $stats[$name] = $handler ? $handler->count($task) : 0;
         }
 
         return $stats ?? [];

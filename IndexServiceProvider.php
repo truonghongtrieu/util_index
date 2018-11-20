@@ -9,6 +9,7 @@ use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 use Silex\Api\BootableProviderInterface;
 use Silex\Application;
+use Symfony\Component\HttpFoundation\Request;
 
 class IndexServiceProvider implements ServiceProviderInterface, BootableProviderInterface
 {
@@ -60,5 +61,9 @@ class IndexServiceProvider implements ServiceProviderInterface, BootableProvider
     public function boot(Application $app)
     {
         $app->post('/install', 'ctrl.install:post');
+        $app->post('/consume', 'ctrl.consumer:post')
+            ->before(function (Request $req) use ($app) {
+                return $app['middleware.consume']($req);
+            });
     }
 }
