@@ -6,44 +6,6 @@ use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
 use Exception;
 use go1\clients\MqClient;
-use go1\core\customer\account\index\AccountEnrolmentReindex;
-use go1\core\customer\account\index\AccountReindex;
-use go1\core\customer\account\index\EckDataReindex;
-use go1\core\customer\account\index\EckMetadataReindex;
-use go1\core\customer\portal\index\ContractReindex;
-use go1\core\customer\portal\index\PortalConfigReindex;
-use go1\core\customer\portal\index\PortalReindex;
-use go1\core\customer\user\index\UserReindex;
-use go1\core\learning_record\commerce\index\CouponReindex;
-use go1\core\learning_record\commerce\index\CreditReindex;
-use go1\core\learning_record\commerce\index\PaymentTransactionReindex;
-use go1\core\learning_record\enrolment\index\EnrolmentReindex;
-use go1\core\learning_record\enrolment\index\EnrolmentRevisionReindex;
-use go1\core\learning_record\enrolment\index\EnrolmentShareReindex;
-use go1\core\learning_record\enrolment\index\EnrolmentVirtualReindex;
-use go1\core\learning_record\enrolment\index\ManualRecordReindex;
-use go1\core\learning_record\enrolment\index\PlanReindex;
-use go1\core\lo\award\index\AwardAccountEnrolmentReindex;
-use go1\core\lo\award\index\AwardEnrolmentReindex;
-use go1\core\lo\award\index\AwardEnrolmentRevisionReindex;
-use go1\core\lo\award\index\AwardItemEnrolmentReindex;
-use go1\core\lo\award\index\AwardItemManualReindex;
-use go1\core\lo\award\index\AwardItemReindex;
-use go1\core\lo\award\index\AwardManualEnrolmentReindex;
-use go1\core\lo\award\index\AwardReindex;
-use go1\core\lo\award\index\SuggestionCategoryReindex;
-use go1\core\lo\event_li\index\EventAttendanceReindex;
-use go1\core\lo\event_li\index\EventReindex;
-use go1\core\lo\event_li\index\EventSessionReindex;
-use go1\core\lo\index\LoContentSharingReindex;
-use go1\core\lo\index\LoGroupReindex;
-use go1\core\lo\index\LoLocationReindex;
-use go1\core\lo\index\LoPolicyReindex;
-use go1\core\lo\index\LoReindex;
-use go1\core\lo\index\LoShareReindex;
-use go1\core\lo\quiz_li\index\QuizUserAnswerReindex;
-use go1\core\lo\social_li\index\GroupReindex;
-use go1\internal\index\MetricReindex;
 use go1\util\DB;
 use go1\util\es\Schema;
 use go1\util\portal\PortalHelper;
@@ -60,50 +22,9 @@ class TaskRepository
     const INDEX_SLOW_TIME_WARN  = '10s';
     const INDEX_SLOW_TIME_INFO  = '2s';
 
-    const HANDLERS = [
-        UserReindex::NAME,
-        AccountReindex::NAME,
-        PortalReindex::NAME,
-        PortalConfigReindex::NAME,
-        LoReindex::NAME,
-        LoShareReindex::NAME,
-        LoContentSharingReindex::NAME,
-        LoGroupReindex::NAME,
-        LoLocationReindex::NAME,
-        EnrolmentReindex::NAME,
-        EnrolmentShareReindex::NAME,
-        EnrolmentVirtualReindex::NAME,
-        EnrolmentRevisionReindex::NAME,
-        AccountEnrolmentReindex::NAME,
-        GroupReindex::NAME,
-        EckDataReindex::NAME,
-        PaymentTransactionReindex::NAME,
-        QuizUserAnswerReindex::NAME,
-        EckMetadataReindex::NAME,
-        ManualRecordReindex::NAME,
-        CouponReindex::NAME,
-        CreditReindex::NAME,
-        EventReindex::NAME,
-        EventSessionReindex::NAME,
-        EventAttendanceReindex::NAME,
-        AwardReindex::NAME,
-        AwardItemReindex::NAME,
-        AwardItemManualReindex::NAME,
-        AwardItemEnrolmentReindex::NAME,
-        AwardEnrolmentReindex::NAME,
-        AwardEnrolmentRevisionReindex::NAME,
-        AwardManualEnrolmentReindex::NAME,
-        AwardAccountEnrolmentReindex::NAME,
-        SuggestionCategoryReindex::NAME,
-        PlanReindex::NAME,
-        ContractReindex::NAME,
-        MetricReindex::NAME,
-        LoPolicyReindex::NAME,
-    ];
-
     public  $db;
     public  $go1;
-    public  $mqClient;
+    public  $queue;
     public  $client;
     private $container;
     private $logger;
@@ -119,7 +40,7 @@ class TaskRepository
     {
         $this->db = $db;
         $this->go1 = $go1;
-        $this->mqClient = $mqClient;
+        $this->queue = $mqClient;
         $this->client = $client;
         $this->container = $container;
         $this->logger = $logger;
@@ -244,40 +165,72 @@ class TaskRepository
 
     public function execute(Task $task)
     {
-        $settings = [
-            'settings' => [
-                'number_of_shards'                 => 2,
-                'number_of_replicas'               => 0,
-                'index.mapping.total_fields.limit' => 5000,
-            ],
+        $settings['settings'] = [
+            'number_of_shards'                 => 2,
+            'number_of_replicas'               => 0,
+            'index.mapping.total_fields.limit' => 5000,
         ];
 
         if (!$this->client->indices()->exists(['index' => $task->index])) {
-            $this->client->indices()->create([
-                'index' => $task->index,
-                'body'  => Schema::BODY + $settings,
-            ]);
+            $this->client->indices()->create(['index' => $task->index, 'body' => Schema::BODY + $settings]);
         }
 
         if (!$this->client->indices()->exists(['index' => $task->aliasName])) {
-            $this->client->indices()->create([
-                'index' => $task->aliasName,
-                'body'  => Schema::BODY + $settings,
-            ]);
+            $this->client->indices()->create(['index' => $task->aliasName, 'body' => Schema::BODY + $settings]);
         }
 
         $task->stats = $this->stats($task);
-        foreach ($task->stats as $taskName => $num) {
-            $handler = $this->getHandler($taskName);
+
+        dump($task->stats);
+        exit;
+
+        foreach ($task->stats as $handlerName => $num) {
+            $handler = $this->getHandler($handlerName);
             $limit = isset($handler::$limit) ? $handler::$limit : $task->limit;
-            $task->stats[$taskName] = ceil($num / $limit);
+            $task->stats[$handlerName] = ceil($num / $limit);
         }
 
         $task->totalItems = array_sum($task->stats);
         $task->status = Task::IN_PROGRESS;
         $this->update($task);
-
         $this->verify($task);
+    }
+
+    public function verify(Task $task)
+    {
+        dump($task);
+        exit;
+
+        # ---------------------
+        # generate unit-of-works
+        # ---------------------
+        if (!$task->currentHandlerIsCompleted()) {
+            $this->generateItems($task);
+
+            return null;
+        }
+
+        # ---------------------
+        # move to next handler; complete if nothing found.
+        # ---------------------
+        $task->processedItems += $task->stats[$task->currentHandler];
+        $task->currentHandler = $task->nextHandler();
+        while ($task->currentHandler && (0 == $task->stats[$task->currentHandler])) {
+            $task->currentHandler = $task->nextHandler();
+        }
+
+        if (!$task->currentHandler) {
+            $this->finish($task);
+
+            return null;
+        }
+
+        $task->currentOffset = 0;
+        $task->currentOffset = 0;
+        $task->currentIdFromOffset = 0;
+        $task->percent = $this->calculatePercent($task);
+        $this->update($task);
+        $this->generateItems($task);
     }
 
     private function generateItems(Task $task)
@@ -288,7 +241,9 @@ class TaskRepository
             if ($task->currentOffset < $task->stats[$task->currentHandler]) {
                 $idFromOffset = 0;
                 if ($task->currentOffset > 0) {
-                    $idFromOffset = method_exists($handler, 'offsetToId') ? $handler->offsetToId($task, $task->currentIdFromOffset) : 0;
+                    $idFromOffset = method_exists($handler, 'offsetToId')
+                        ? $handler->offsetToId($task, $task->currentIdFromOffset)
+                        : 0;
                 }
 
                 $items[] = [
@@ -302,44 +257,17 @@ class TaskRepository
                 ];
                 $task->currentIdFromOffset = $idFromOffset;
             }
+
             ++$task->currentOffset;
         }
-        $this->update($task);
-        $this->mqClient->queue($items, IndexService::WORKER_TASK_BULK, ['id' => $task->id]);
-    }
 
-    private function handlerIsCompleted(Task $task, string $handler)
-    {
-        return (0 == $task->stats[$handler]) || ($task->currentOffset >= $task->stats[$handler]);
+        $this->update($task);
+        $this->queue->queue($items, IndexService::WORKER_TASK_BULK, ['id' => $task->id]);
     }
 
     private function calculatePercent(Task $task)
     {
         return ($task->processedItems / $task->totalItems) * 100;
-    }
-
-    public function verify(Task $task)
-    {
-        if ($this->handlerIsCompleted($task, $task->currentHandler)) {
-            # Find a next handler.
-            $task->processedItems += $task->stats[$task->currentHandler];
-            $task->currentHandler = $task->nextHandler();
-            while ($task->currentHandler && (0 == $task->stats[$task->currentHandler])) {
-                $task->currentHandler = $task->nextHandler();
-            }
-
-            if (!$task->currentHandler) {
-                return $this->finish($task);
-            }
-
-            $task->currentOffset = 0;
-            $task->currentOffset = 0;
-            $task->currentIdFromOffset = 0;
-            $task->percent = $this->calculatePercent($task);
-            $this->update($task);
-        }
-
-        $this->generateItems($task);
     }
 
     /**
@@ -358,14 +286,11 @@ class TaskRepository
 
     public function stats(Task $task)
     {
-        $stats = [];
         foreach ($task->handlers as $name) {
-            if ($handler = $this->getHandler($name)) {
-                $stats[$name] = (int) $handler->count($task);
-            }
+            $stats[$name] = (int) $this->getHandler($name)->count($task);
         }
 
-        return $stats;
+        return $stats ?? [];
     }
 
     public function hash(Task $task)

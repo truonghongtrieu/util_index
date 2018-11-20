@@ -26,22 +26,6 @@ class IndexServiceProvider implements ServiceProviderInterface, BootableProvider
             return new HistoryRepository($c['dbs']['default']);
         };
 
-        $c['consumer.lo.arguments'] = function (Container $c) {
-            return [
-                $c['go1.client.es'],
-                $c['history.repository'],
-                $c['dbs']['default'],
-                $c['dbs']['go1_write'],
-                $c['accounts_name'],
-                $c['formatter.lo'],
-                $c['formatter.user'],
-                $c['waitForCompletion'],
-                $c['repository.es'],
-                $c['go1.client.mq'],
-                $c['portal_checker'],
-            ];
-        };
-
         $c['task.repository'] = function (Container $c) {
             return new TaskRepository(
                 $c['dbs']['default'],

@@ -91,6 +91,19 @@ class Task implements JsonSerializable
         return false;
     }
 
+    public function currentHandlerIsCompleted(): bool
+    {
+        if (0 == $this->stats[$this->currentHandler]) {
+            return true;
+        }
+
+        if ($this->currentOffset >= $this->stats[$this->currentHandler]) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function jsonSerialize()
     {
         $array = [

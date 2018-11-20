@@ -44,7 +44,6 @@ use go1\util\schema\mock\UserMockTrait;
 use go1\util\user\UserHelper;
 use go1\util_index\IndexService;
 use go1\util_index\task\Task;
-use go1\util_index\task\TaskRepository;
 use Symfony\Component\HttpFoundation\Request;
 
 class ReindexControllerTest extends IndexServiceTestCase
@@ -726,7 +725,7 @@ class ReindexControllerTest extends IndexServiceTestCase
         $stats = json_decode($res->getContent(), true);
 
         $this->assertEquals(200, $res->getStatusCode());
-        $this->assertCount(count(TaskRepository::HANDLERS), $stats);
+        $this->assertCount(count(REINDEX_HANDLERS), $stats);
     }
 
     public function testInstance()
