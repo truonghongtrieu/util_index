@@ -155,7 +155,9 @@ class LoFormatter
                     'instance_id'         => $portalId = intval($lo->routing ?? $lo->instance_id),
                     'updated_at'          => time(),
                     'shared'              => $lo->shared ?? 0,
-                    'realm'               => ($lo->instance_id == $portalId) ? PolicyHelper::entityRealmOnLO($this->policy, EntityTypes::PORTAL, $portalId, $portalId, $lo->id) : null,
+                    'realm'               => ($this->policy && ($lo->instance_id == $portalId))
+                        ? PolicyHelper::entityRealmOnLO($this->policy, EntityTypes::PORTAL, $portalId, $portalId, $lo->id)
+                        : null,
                 ],
             ];
 

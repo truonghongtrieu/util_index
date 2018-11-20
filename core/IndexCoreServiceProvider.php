@@ -5,6 +5,7 @@ namespace go1\util_index\core;
 use go1\util\location\LocationRepository;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
+use ReflectionClass;
 use Silex\Api\BootableProviderInterface;
 use Silex\Application;
 
@@ -28,6 +29,10 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['accounts_name'],
                 $c['formatter.eck_data']
             );
+        };
+
+        $c['formatter.award.enrolment'] = function (Container $c) {
+            return new AwardEnrolmentFormatter($c['dbs']['go1'], $c['dbs']['award'], $c['formatter.lo'], $c['formatter.user']);
         };
 
         $c['formatter.lo'] = function (Container $c) {
@@ -74,6 +79,12 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
             ];
         };
 
+        $c['consumer.lo'] = function (Container $c) {
+            $reflection = new ReflectionClass(LoConsumer::class);
+
+            return $reflection->newInstanceArgs($c['consumer.lo.arguments']);
+        };
+
         $c['consumer.enrolment'] = function (Container $c) {
             return new EnrolmentConsumer(
                 $c['dispatcher'],
@@ -81,7 +92,7 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['history.repository'],
                 $c['dbs']['default'],
                 $c['dbs']['go1_write'],
-                $c['dbs']['social_write'],
+                $c['dbs']['social_write'] ?? null,
                 $c['accounts_name'],
                 $c['formatter.enrolment'],
                 $c['formatter.lo'],
@@ -89,6 +100,19 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['formatter.eck_data'],
                 $c['waitForCompletion'],
                 $c['repository.es']
+            );
+        };
+
+        $c['consumer.assessor'] = function (Container $c) {
+            return new AssessorConsumer(
+                $c['go1.client.es'],
+                $c['history.repository'],
+                $c['dbs']['default'],
+                $c['dbs']['go1_write'],
+                $c['dbs']['award_write'],
+                $c['formatter.enrolment'],
+                $c['waitForCompletion'],
+                $c['go1.client.mq']
             );
         };
 

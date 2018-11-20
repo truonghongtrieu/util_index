@@ -7,8 +7,6 @@ use Elasticsearch\Client;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use Exception;
 use go1\core\learning_record\enrolment\index\EnrolmentIndexServiceProvider;
-use go1\core\lo\index\LoContentSharingConsumer;
-use go1\core\lo\index\LoShareConsumer;
 use go1\util\contract\ConsumerInterface;
 use go1\util\enrolment\EnrolmentHelper;
 use go1\util\enrolment\EnrolmentTypes;
@@ -54,7 +52,7 @@ class EnrolmentConsumer implements ConsumerInterface
         HistoryRepository $history,
         Connection $db,
         Connection $go1,
-        Connection $social,
+        ?Connection $social,
         string $accountsName,
         EnrolmentFormatter $formatter,
         LoFormatter $loFormatter,
@@ -543,14 +541,14 @@ class EnrolmentConsumer implements ConsumerInterface
         }
     }
 
-    private function parentId(int $loId, int $takenInstanceId)
+    private function parentId(int $loId, int $takenPortalId)
     {
-        if (LoHelper::hasActiveMembership($this->go1, $loId, $takenInstanceId)) {
-            return LoShareConsumer::id($takenInstanceId, $loId);
+        if (LoHelper::hasActiveMembership($this->go1, $loId, $takenPortalId)) {
+            return LoShareConsumer::id($takenPortalId, $loId);
         }
 
-        if (GroupHelper::isMemberOfContentSharingGroup($this->social, $loId, $takenInstanceId)) {
-            return LoContentSharingConsumer::id($loId, $takenInstanceId);
+        if (GroupHelper::isMemberOfContentSharingGroup($this->social, $loId, $takenPortalId)) {
+            return LoContentSharingConsumer::id($loId, $takenPortalId);
         }
 
         return $loId;
