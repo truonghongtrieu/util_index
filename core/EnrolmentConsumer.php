@@ -1,0 +1,558 @@
+<?php
+
+namespace go1\util_index\core;
+
+use Doctrine\DBAL\Connection;
+use Elasticsearch\Client;
+use Elasticsearch\Common\Exceptions\ElasticsearchException;
+use Exception;
+use go1\core\learning_record\enrolment\index\EnrolmentIndexServiceProvider;
+use go1\core\lo\index\LoContentSharingConsumer;
+use go1\core\lo\index\LoShareConsumer;
+use go1\util\contract\ConsumerInterface;
+use go1\util\enrolment\EnrolmentHelper;
+use go1\util\enrolment\EnrolmentTypes;
+use go1\util\es\Schema;
+use go1\util\group\GroupHelper;
+use go1\util\group\GroupItemTypes;
+use go1\util\lo\LoHelper;
+use go1\util\lo\LoTypes;
+use go1\util\plan\PlanHelper;
+use go1\util\plan\PlanTypes;
+use go1\util\portal\PortalHelper;
+use go1\util\queue\Queue;
+use go1\util\user\UserHelper;
+use go1\util_index\ElasticSearchRepository;
+use go1\util_index\HistoryRepository;
+use go1\util_index\IndexHelper;
+use ONGR\ElasticsearchDSL\Query\Compound\BoolQuery;
+use ONGR\ElasticsearchDSL\Query\TermLevel\TermQuery;
+use Ramsey\Uuid\Uuid;
+use RuntimeException;
+use stdClass;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+
+class EnrolmentConsumer implements ConsumerInterface
+{
+    protected $dispatcher;
+    protected $client;
+    protected $history;
+    protected $db;
+    protected $go1;
+    protected $social;
+    protected $accountsName;
+    protected $formatter;
+    protected $loFormatter;
+    protected $userFormatter;
+    protected $eckDataFormatter;
+    protected $waitForCompletion;
+    protected $repository;
+
+    public function __construct(
+        EventDispatcherInterface $dispatcher,
+        Client $client,
+        HistoryRepository $history,
+        Connection $db,
+        Connection $go1,
+        Connection $social,
+        string $accountsName,
+        EnrolmentFormatter $formatter,
+        LoFormatter $loFormatter,
+        UserFormatter $userFormatter,
+        AccountFieldFormatter $eckDataFormatter,
+        bool $waitForCompletion,
+        ElasticSearchRepository $repository
+    )
+    {
+        $this->dispatcher = $dispatcher;
+        $this->client = $client;
+        $this->history = $history;
+        $this->db = $db;
+        $this->go1 = $go1;
+        $this->social = $social;
+        $this->accountsName = $accountsName;
+        $this->formatter = $formatter;
+        $this->loFormatter = $loFormatter;
+        $this->userFormatter = $userFormatter;
+        $this->eckDataFormatter = $eckDataFormatter;
+        $this->waitForCompletion = $waitForCompletion;
+        $this->repository = $repository;
+    }
+
+    public function aware(string $event): bool
+    {
+        return in_array($event, [
+            Queue::ENROLMENT_CREATE,
+            Queue::ENROLMENT_UPDATE,
+            Queue::ENROLMENT_DELETE,
+            Queue::LO_UPDATE,
+            Queue::USER_UPDATE,
+            Queue::USER_DELETE,
+            Queue::GROUP_ITEM_CREATE,
+            Queue::GROUP_ITEM_DELETE,
+            Queue::ECK_CREATE,
+            Queue::ECK_UPDATE,
+            Queue::ECK_DELETE,
+            Queue::QUIZ_USER_ANSWER_CREATE,
+            Queue::QUIZ_USER_ANSWER_UPDATE,
+        ]);
+    }
+
+    public function consume(string $routingKey, stdClass $enrolment, stdClass $context = null): bool
+    {
+        switch ($routingKey) {
+            case Queue::ENROLMENT_CREATE:
+                if ($lo = LoHelper::load($this->go1, $enrolment->lo_id)) {
+                    $this->onCreate($enrolment, $lo);
+                }
+                break;
+
+            case Queue::ENROLMENT_UPDATE:
+                if ($lo = LoHelper::load($this->go1, $enrolment->lo_id)) {
+                    $this->onUpdate($enrolment, $lo);
+                }
+                break;
+
+            case Queue::ENROLMENT_DELETE:
+                if ($lo = LoHelper::load($this->go1, $enrolment->lo_id)) {
+                    $this->onDelete($enrolment, $lo);
+                }
+                break;
+
+            case Queue::LO_UPDATE:
+                $this->onLoUpdate($enrolment);
+                $this->onParentUpdate($enrolment);
+
+                $lo = $enrolment;
+                if ((LoTypes::COURSE == $lo->type) && isset($lo->original) && ($lo->original->published != $lo->published)) {
+                    $this->updateChildEnrolmentStatus($lo);
+                }
+                break;
+
+            case Queue::USER_UPDATE:
+                $this->onAccountUpdate($enrolment);
+                $this->onAssessorUpdate($enrolment);
+                break;
+
+            case Queue::USER_DELETE:
+                $this->onAccountDelete($enrolment);
+                break;
+
+            case Queue::GROUP_ITEM_CREATE:
+                $this->onGroupItemCreate($enrolment);
+                break;
+
+            case Queue::GROUP_ITEM_DELETE:
+                $this->onGroupItemDelete($enrolment);
+                break;
+
+            case Queue::ECK_CREATE:
+            case Queue::ECK_UPDATE:
+                $this->onEckUpdate($enrolment);
+                break;
+
+            case Queue::ECK_DELETE:
+                $this->onEckDelete($enrolment);
+                break;
+
+            case Queue::QUIZ_USER_ANSWER_CREATE:
+            case Queue::QUIZ_USER_ANSWER_UPDATE:
+                $this->onQuizUserAnswerUpdate($enrolment);
+                break;
+
+            case EnrolmentIndexServiceProvider::BULK_ENROLMENT:
+                $this->onBulk($enrolment->enrolments, $enrolment->indexName, $enrolment->marketplace ?? false);
+                break;
+        }
+
+        return true;
+    }
+
+    protected function format(stdClass $enrolment)
+    {
+        return $this->formatter->format($enrolment);
+    }
+
+    private function onCreate(stdClass $enrolment, stdClass $lo, $indices = null)
+    {
+        $parentIdByIndices = [Schema::portalIndex($enrolment->taken_instance_id) => $this->parentId($enrolment->lo_id, $enrolment->taken_instance_id)];
+
+        try {
+            $this->repository->create([
+                'type'           => Schema::O_ENROLMENT,
+                'id'             => $enrolment->id,
+                'body'           => $this->format($enrolment),
+                'parent'         => $enrolment->lo_id,
+                'parent_indices' => $parentIdByIndices,
+            ], $indices ?? IndexHelper::enrolmentIndices($enrolment));
+
+            $user = UserHelper::loadByProfileId($this->go1, $enrolment->profile_id, $this->accountsName);
+            $plan = PlanHelper::loadByEntityAndUser($this->go1, PlanTypes::ENTITY_LO, $enrolment->lo_id, $user->id);
+            if ($plan) {
+                $this->client->delete([
+                    'index' => Schema::portalIndex($plan->instance_id),
+                    'type'  => Schema::O_ENROLMENT,
+                    'id'    => EnrolmentTypes::TYPE_PLAN_ASSIGNED . ":{$plan->id}",
+                ]);
+            }
+        } catch (ElasticsearchException $e) {
+            $this->history->write(Schema::O_ENROLMENT, $enrolment->id, $e->getCode(), $e->getMessage());
+        }
+    }
+
+    private function onUpdate(stdClass $enrolment, stdClass $lo, $indices = null)
+    {
+        try {
+            $this->repository->update([
+                'type' => Schema::O_ENROLMENT,
+                'id'   => $enrolment->id,
+                'body' => ['doc' => $this->format($enrolment), 'doc_as_upsert' => true],
+            ], $indices ?? IndexHelper::enrolmentIndices($enrolment));
+        } catch (ElasticsearchException $e) {
+            $this->history->write(Schema::O_ENROLMENT, $enrolment->id, $e->getCode(), $e->getMessage());
+        }
+    }
+
+    private function onDelete(stdClass $enrolment, stdClass $lo, $indices = null)
+    {
+        try {
+            $this->repository->delete(
+                [
+                    'type' => Schema::O_ENROLMENT,
+                    'id'   => $enrolment->id,
+                ],
+                IndexHelper::enrolmentIndices($enrolment)
+            );
+        } catch (ElasticsearchException $e) {
+            $this->history->write(Schema::O_ENROLMENT, $enrolment->id, $e->getCode(), $e->getMessage());
+        }
+    }
+
+    private function onBulk(array $enrolments, string $indexName, $marketplace = false)
+    {
+        $params = ['body' => [], 'refresh' => $this->waitForCompletion, 'client' => ['headers' => ['uuid' => Uuid::uuid4()->toString()]]];
+        foreach ($enrolments as $enrolment) {
+            try {
+                $params['body'][] = [
+                    'index' => [
+                        '_index'   => $indexName,
+                        '_type'    => Schema::O_ENROLMENT,
+                        '_id'      => $enrolment->id,
+                        '_parent'  => $marketplace ? $enrolment->lo_id : $this->parentId($enrolment->lo_id, $enrolment->taken_instance_id),
+                        '_routing' => $enrolment->routing ?? $enrolment->taken_instance_id,
+                    ],
+                ];
+                $params['body'][] = $this->format($enrolment);
+            } catch (Exception $e) {
+                $this->history->write(Schema::O_ENROLMENT, $enrolment->id, 500, $e->getMessage());
+            }
+        }
+        if ($params['body']) {
+            $response = $this->client->bulk($params);
+            $this->history->bulkLog($response);
+        }
+    }
+
+    private function onLoUpdate(stdClass $lo)
+    {
+        $params = [
+            'index'               => Schema::INDEX,
+            'type'                => Schema::O_ENROLMENT,
+            'body'                => [
+                'query'  => (new TermQuery('lo_id', $lo->id))->toArray(),
+                'script' => [
+                    'inline' => "ctx._source.lo = params.lo",
+                    'params' => ['lo' => $this->loFormatter->format($lo)],
+                ],
+            ],
+            'refresh'             => $this->waitForCompletion,
+            'wait_for_completion' => $this->waitForCompletion,
+        ];
+        $this->client->updateByQuery($params);
+    }
+
+    private function onParentUpdate(stdClass $lo)
+    {
+        $params = [
+            'index'               => Schema::INDEX,
+            'type'                => Schema::O_ENROLMENT,
+            'body'                => [
+                'query'  => (new TermQuery('parent_lo.id', $lo->id))->toArray(),
+                'script' => [
+                    'inline' => "ctx._source.parent_lo = params.lo",
+                    'params' => ['lo' => [
+                        'id'    => (int) $lo->id,
+                        'type'  => $lo->type,
+                        'title' => $lo->title,
+                    ]],
+                ],
+            ],
+            'refresh'             => $this->waitForCompletion,
+            'wait_for_completion' => $this->waitForCompletion,
+        ];
+        $this->client->updateByQuery($params);
+    }
+
+    private function onAccountUpdate(stdClass $account)
+    {
+        if (($this->accountsName === $account->instance) || !IndexHelper::userIsChanged($account)) {
+            return;
+        }
+
+        $formattedAccount = $this->userFormatter->format($account, true);
+        foreach ($formattedAccount as $k => $v) {
+            $lines[] = "ctx._source.account.$k = params.$k";
+        }
+
+        if (!empty($lines)) {
+            $this->client->updateByQuery(
+                [
+                    'index'               => Schema::INDEX,
+                    'type'                => Schema::O_ENROLMENT,
+                    'body'                => [
+                        'query'  => (new TermQuery('metadata.account_id', $account->id))->toArray(),
+                        'script' => [
+                            'inline' => implode(";", $lines),
+                            'params' => $formattedAccount,
+                        ],
+                    ],
+                    'refresh'             => $this->waitForCompletion,
+                    'wait_for_completion' => $this->waitForCompletion,
+                    'conflicts'           => 'abort',
+                ]
+            );
+        }
+    }
+
+    private function onAssessorUpdate(stdClass $user)
+    {
+        if (($this->accountsName !== $user->instance) || !IndexHelper::userIsChanged($user)) {
+            return;
+        }
+
+        if (isset($user->data) && is_scalar($user->data)) {
+            $user->data = json_decode($user->data);
+        }
+
+        if (empty($user->first_name)) {
+            $fullName = $user->last_name;
+        } elseif (empty($user->last_name)) {
+            $fullName = $user->first_name;
+        } else {
+            $fullName = "{$user->first_name} {$user->last_name}";
+        }
+
+        $params = [
+            'index'               => Schema::INDEX,
+            'type'                => Schema::O_ENROLMENT,
+            'body'                => [
+                'query'  => (new TermQuery('assessor.id', $user->id))->toArray(),
+                'script' => [
+                    'inline' => "ctx._source.assessor = params.assessor",
+                    'params' => ['assessor' => [
+                        'id'         => (int) $user->id,
+                        'mail'       => $user->mail,
+                        'name'       => $fullName,
+                        'first_name' => isset($user->first_name) ? $user->first_name : '',
+                        'last_name'  => isset($user->last_name) ? $user->last_name : '',
+                        'avatar'     => isset($user->avatar) ? $user->avatar : (isset($user->data->avatar->uri) ? $user->data->avatar->uri : null),
+                    ]],
+                ],
+            ],
+            'refresh'             => $this->waitForCompletion,
+            'wait_for_completion' => $this->waitForCompletion,
+            'conflicts'           => 'abort',
+        ];
+        $this->client->updateByQuery($params);
+    }
+
+    private function onAccountDelete(stdClass $account)
+    {
+        if ($this->accountsName === $account->instance) {
+            return;
+        }
+
+        $params = [
+            'index'               => Schema::INDEX,
+            'type'                => Schema::O_ENROLMENT,
+            'body'                => [
+                'query'  => (new TermQuery('metadata.account_id', $account->id))->toArray(),
+                'script' => [
+                    'inline' => 'ctx._source.account = null',
+                ],
+            ],
+            'refresh'             => $this->waitForCompletion,
+            'wait_for_completion' => $this->waitForCompletion,
+        ];
+        $this->client->updateByQuery($params);
+    }
+
+    private function updateChildEnrolmentStatus(stdClass $lo)
+    {
+        $query = new BoolQuery();
+        $query->add(new TermQuery('metadata.course_id', $lo->id), BoolQuery::MUST);
+
+        $this->client->updateByQuery([
+            'index'               => Schema::INDEX,
+            'type'                => Schema::O_ENROLMENT,
+            'body'                => [
+                'query'  => $query->toArray(),
+                'script' => [
+                    'inline' => "ctx._source.metadata.status = $lo->published;",
+                ],
+            ],
+            'refresh'             => $this->waitForCompletion,
+            'wait_for_completion' => $this->waitForCompletion,
+        ]);
+    }
+
+    private function onGroupItemCreate(stdClass $groupItem)
+    {
+        if (GroupItemTypes::USER !== $groupItem->entity_type) {
+            return;
+        }
+
+        if (!$user = UserHelper::load($this->go1, $groupItem->entity_id)) {
+            throw new RuntimeException('Account not found');
+        }
+
+        if (!$portalId = PortalHelper::idFromName($this->go1, $user->instance)) {
+            throw new RuntimeException('Portal not found');
+        }
+
+        $this->updateUserGroups($portalId, $groupItem->entity_id);
+    }
+
+    private function onGroupItemDelete(stdClass $groupItem)
+    {
+        if (GroupItemTypes::USER !== $groupItem->entity_type) {
+            return;
+        }
+
+        if (!$user = UserHelper::load($this->go1, $groupItem->entity_id)) {
+            throw new RuntimeException('Account not found');
+        }
+
+        if (!$portalId = PortalHelper::idFromName($this->go1, $user->instance)) {
+            throw new RuntimeException('Portal not found');
+        }
+
+        $this->updateUserGroups($portalId, $groupItem->entity_id);
+    }
+
+    private function updateUserGroups($portalId, $accountId)
+    {
+        $groups = GroupHelper::userGroups($this->go1, $this->social, $portalId, $accountId, $this->accountsName);
+        $query = new BoolQuery();
+        $query->add(new TermQuery('metadata.account_id', $accountId), BoolQuery::MUST);
+
+        $params = [
+            'index'               => Schema::INDEX,
+            'type'                => Schema::O_ENROLMENT,
+            'body'                => [
+                'query'  => $query->toArray(),
+                'script' => [
+                    'inline' => "ctx._source.account.groups = params.groups",
+                    'params' => [
+                        'groups' => $groups,
+                    ],
+                ],
+            ],
+            'refresh'             => $this->waitForCompletion,
+            'wait_for_completion' => $this->waitForCompletion,
+        ];
+        $this->client->updateByQuery($params);
+    }
+
+    private function onEckUpdate(stdClass $entity)
+    {
+        if (($entity->entity_type === Schema::O_ACCOUNT) && IndexHelper::eckEntityIsChanged($entity)) {
+            try {
+                $formattedEntity = $this->eckDataFormatter->format($entity);
+                $this->updateEckEnrollments($formattedEntity, $entity->id);
+            } catch (ElasticsearchException $e) {
+                $this->history->write($entity->entity_type, $entity->id, $e->getCode(), $e->getMessage());
+            }
+        }
+    }
+
+    private function onEckDelete(stdClass $entity)
+    {
+        $instanceId = $this->go1->fetchColumn('SELECT id FROM gc_instance WHERE title = ?', [$entity->instance]);
+        if (!$instanceId) {
+            return;
+        }
+
+        if ($entity->entity_type === Schema::O_ACCOUNT) {
+            try {
+                $formattedEntity = ['fields_' . $instanceId => null];
+                $this->updateEckEnrollments($formattedEntity, $entity->id);
+            } catch (ElasticsearchException $e) {
+                $this->history->write($entity->entity_type, $entity->id, $e->getCode(), $e->getMessage());
+            }
+        }
+    }
+
+    private function updateEckEnrollments($formattedEntity, $id)
+    {
+        foreach ($formattedEntity as $k => $v) {
+            $lines[] = "ctx._source.account.$k = params.$k";
+        }
+        $params = [
+            'index'               => Schema::INDEX,
+            'type'                => Schema::O_ENROLMENT,
+            'body'                => [
+                'query'  => (new TermQuery('metadata.account_id', $id))->toArray(),
+                'script' => [
+                    'inline' => implode(";", $lines),
+                    'params' => $formattedEntity,
+                ],
+            ],
+            'refresh'             => $this->waitForCompletion,
+            'wait_for_completion' => $this->waitForCompletion,
+            'conflicts'           => 'abort',
+        ];
+        $this->client->updateByQuery($params);
+    }
+
+    private function onQuizUserAnswerUpdate(stdClass $answer, $indices = null)
+    {
+        // Some answers have enrolment_id attach to result, some do not. In that case, load enrolment manually.
+        if (isset($answer->result->data->enrolment_id)) {
+            $enrolment = EnrolmentHelper::load($this->go1, $answer->result->data->enrolment_id);
+        } else {
+            // @todo Track enrolment id in question's result.
+            $portal = PortalHelper::load($this->go1, $answer->question->data->portal_name);
+            $portalId = $portal->id;
+            $loId = $answer->question->data->li_id;
+            $profileId = $answer->person->external_identifier;
+            $enrolment = EnrolmentHelper::loadByLoProfileAndPortal($this->go1, $loId, $profileId, $portalId);
+        }
+        if ($enrolment) {
+            if ($lo = LoHelper::load($this->go1, $enrolment->lo_id)) {
+                try {
+                    $this->repository->update([
+                        'type' => Schema::O_ENROLMENT,
+                        'id'   => $enrolment->id,
+                        'body' => ['doc' => $this->format($enrolment), 'doc_as_upsert' => true],
+                    ], $indices ?? IndexHelper::enrolmentIndices($enrolment));
+                } catch (ElasticsearchException $e) {
+                    $this->history->write(Schema::O_ENROLMENT, $enrolment->id, $e->getCode(), $e->getMessage());
+                }
+            }
+        }
+    }
+
+    private function parentId(int $loId, int $takenInstanceId)
+    {
+        if (LoHelper::hasActiveMembership($this->go1, $loId, $takenInstanceId)) {
+            return LoShareConsumer::id($takenInstanceId, $loId);
+        }
+
+        if (GroupHelper::isMemberOfContentSharingGroup($this->social, $loId, $takenInstanceId)) {
+            return LoContentSharingConsumer::id($loId, $takenInstanceId);
+        }
+
+        return $loId;
+    }
+}

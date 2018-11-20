@@ -47,6 +47,17 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
             );
         };
 
+        $c['formatter.enrolment'] = function (Container $c) {
+            return new EnrolmentFormatter(
+                $c['dbs']['go1'],
+                $c['dbs']['assignment'] ?? null,
+                $c['dbs']['quiz'] ?? null,
+                $c['accounts_name'],
+                $c['formatter.lo'],
+                $c['formatter.user']
+            );
+        };
+
         $c['consumer.lo.arguments'] = function (Container $c) {
             return [
                 $c['go1.client.es'],
@@ -61,6 +72,24 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['go1.client.mq'],
                 $c['portal_checker'],
             ];
+        };
+
+        $c['consumer.enrolment'] = function (Container $c) {
+            return new EnrolmentConsumer(
+                $c['dispatcher'],
+                $c['go1.client.es'],
+                $c['history.repository'],
+                $c['dbs']['default'],
+                $c['dbs']['go1_write'],
+                $c['dbs']['social_write'],
+                $c['accounts_name'],
+                $c['formatter.enrolment'],
+                $c['formatter.lo'],
+                $c['formatter.user'],
+                $c['formatter.eck_data'],
+                $c['waitForCompletion'],
+                $c['repository.es']
+            );
         };
 
         $c['ctrl.task'] = function (Container $c) {

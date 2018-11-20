@@ -83,17 +83,19 @@ class LoFormatter
         $tags = array_unique(array_merge($newTags, $oldTags));
 
         // Code clone from https://code.go1.com.au/microservices/algolia/blob/master/domain/LoRepository.php#L86
-        $voteInfo = null;
-        $vote = VoteHelper::getEntityVote($this->vote, VoteTypes::ENTITY_TYPE_LO, (int) $lo->id);
-        if ($vote) {
-            $numLike = isset($vote->data['like']) ? $vote->data['like'] : 0;
-            $numDislike = isset($vote->data['dislike']) ? $vote->data['dislike'] : 0;
-            $voteInfo = [
-                'percent' => (int) $vote->percent,
-                'rank'    => $vote->percent * $numLike,
-                'like'    => $numLike,
-                'dislike' => $numDislike,
-            ];
+        if (!is_null($this->vote)) {
+            $voteInfo = null;
+            $vote = VoteHelper::getEntityVote($this->vote, VoteTypes::ENTITY_TYPE_LO, (int) $lo->id);
+            if ($vote) {
+                $numLike = isset($vote->data['like']) ? $vote->data['like'] : 0;
+                $numDislike = isset($vote->data['dislike']) ? $vote->data['dislike'] : 0;
+                $voteInfo = [
+                    'percent' => (int) $vote->percent,
+                    'rank'    => $vote->percent * $numLike,
+                    'like'    => $numLike,
+                    'dislike' => $numDislike,
+                ];
+            }
         }
 
         $image = $lo->data->image ?? $lo->data->image_url ?? $lo->image ?? '';
@@ -126,7 +128,7 @@ class LoFormatter
             'duration'      => intval($lo->data->duration ?? 0),
             'created'       => DateTime::formatDate((!empty($lo->created) ? $lo->created : time())),
             'updated'       => DateTime::formatDate((!empty($lo->updated) ? $lo->updated : time())),
-            'vote'          => $voteInfo,
+            'vote'          => $voteInfo ?? [],
             'items_count'   => $this->itemCount($lo),
             'data'          => [
                 LoHelper::ASSIGNMENT_ALLOW_RESUBMIT => intval($lo->data->allow_resubmit ?? 0),
@@ -135,7 +137,7 @@ class LoFormatter
                 'url'                               => $lo->data->path ?? null,
                 'single_li'                         => LoHelper::isSingleLi($lo) ? 1 : 0,
             ],
-            'collection_id' => $this->getCollectionIdsByPortalId($lo->id, (int) ($lo->routing ?? $lo->instance_id)),
+            'collection_id' => is_null($this->collection) ? 0 : $this->getCollectionIdsByPortalId($lo->id, (int) ($lo->routing ?? $lo->instance_id)),
         ];
 
         if (!$teaser) {
