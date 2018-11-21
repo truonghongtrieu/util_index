@@ -116,6 +116,21 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
             );
         };
 
+        $c['consumer.task'] = function (Container $c) {
+            return new TaskConsumer(
+                $c['dbs']['default'],
+                $c,
+                $c['go1.client.mq'],
+                $c['task.repository'],
+                $c['history.repository'],
+                $c['logger']
+            );
+        };
+
+        $c['consumers'] = function (Container $c) {
+            return [$c['consumer.task']];
+        };
+
         $c['ctrl.task'] = function (Container $c) {
             return new TaskController(
                 $c['env'],

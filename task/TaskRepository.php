@@ -79,7 +79,7 @@ class TaskRepository
 
         if ($data) {
             $task = Task::create($data);
-            $task->instance && $task->instance = PortalHelper::load($this->go1, $task->instance);
+            $task->portalName && $task->portalName = PortalHelper::load($this->go1, $task->portalName);
 
             return $task;
         }

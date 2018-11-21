@@ -144,8 +144,11 @@ abstract class IndexServiceTestCase extends TestCase
                                 $this->assertEquals(204, $res->getStatusCode());
                             }
 
-                            $req = Request::create('/consume?jwt=' . UserHelper::ROOT_JWT, 'POST');
-                            $req->request->replace(['routingKey' => $routingKey, 'body' => (object) [], 'context' => $context]);
+                            $req = Request::create('/consume?jwt=' . UserHelper::ROOT_JWT, 'POST', [
+                                'routingKey' => $routingKey,
+                                'body'       => (object) [],
+                                'context'    => $context,
+                            ]);
                             $res = $app->handle($req);
                             $this->assertEquals(204, $res->getStatusCode());
 
