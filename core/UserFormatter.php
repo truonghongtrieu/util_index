@@ -88,7 +88,11 @@ class UserFormatter
 
             if ($this->accountsName !== $user->instance) {
                 $portalId = PortalHelper::idFromName($this->go1, $user->instance);
-                $doc['groups'] = GroupHelper::userGroups($this->go1, $this->social, $portalId, $user->id, $this->accountsName, GroupStatus::ARCHIVED);
+
+                if ($this->social) {
+                    $doc['groups'] = GroupHelper::userGroups($this->go1, $this->social, $portalId, $user->id, $this->accountsName, GroupStatus::ARCHIVED);
+                }
+
                 $doc['managers'] = $this->formatManagers($user->id);
                 $doc['metadata'] = [
                     'instance_id' => $portalId,

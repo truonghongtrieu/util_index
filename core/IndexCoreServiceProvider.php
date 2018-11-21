@@ -103,6 +103,26 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
             );
         };
 
+        $c['consumer.plan.enrolment-virtual'] = function (Container $c) {
+            return new EnrolmentVirtualFromPlanConsumer(
+                $c['dispatcher'],
+                $c['go1.client.es'],
+                $c['history.repository'],
+                $c['dbs']['default'],
+                $c['dbs']['go1_write'],
+                $c['dbs']['social_write'],
+                $c['dbs']['award_write'],
+                $c['accounts_name'],
+                $c['formatter.enrolment'],
+                $c['formatter.award.enrolment'],
+                $c['formatter.lo'],
+                $c['formatter.user'],
+                $c['formatter.eck_data'],
+                $c['waitForCompletion'],
+                $c['repository.es']
+            );
+        };
+
         $c['consumer.assessor'] = function (Container $c) {
             return new AssessorConsumer(
                 $c['go1.client.es'],

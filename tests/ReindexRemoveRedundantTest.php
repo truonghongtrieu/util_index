@@ -73,7 +73,7 @@ class ReindexRemoveRedundantTest extends IndexServiceTestCase
         $consumer = $app['reindex.handler.lo'];
 
         $task = Task::create((object) []);
-        $task->portalName = PortalHelper::load($go1, $this->portalId1);
+        $task->portal = PortalHelper::load($go1, $this->portalId1);
         $task->created = 1000;
 
         $this->createEsLo($client, ['id' => 10, 'updated_at' => 900] + $this->portalBase1);
@@ -107,7 +107,7 @@ class ReindexRemoveRedundantTest extends IndexServiceTestCase
         $consumer = $app['reindex.handler.lo_content_sharing'];
 
         $task = Task::create((object) []);
-        $task->portalName = PortalHelper::load($go1, $this->portalId1);
+        $task->portal = PortalHelper::load($go1, $this->portalId1);
         $task->created = 1000;
 
         $this->portalBase1['instance_id'] = $this->portalId2;
@@ -144,7 +144,7 @@ class ReindexRemoveRedundantTest extends IndexServiceTestCase
         $consumer = $app['reindex.handler.lo_share'];
 
         $task = Task::create((object) []);
-        $task->portalName = PortalHelper::load($go1, $this->portalId1);
+        $task->portal = PortalHelper::load($go1, $this->portalId1);
         $task->created = 1000;
 
         $this->portalBase1['instance_id'] = $this->portalId2;
@@ -178,7 +178,7 @@ class ReindexRemoveRedundantTest extends IndexServiceTestCase
         $consumer = $app['reindex.handler.enrolment'];
 
         $task = Task::create((object) []);
-        $task->portalName = PortalHelper::load($go1, $this->portalId1);
+        $task->portal = PortalHelper::load($go1, $this->portalId1);
         $task->created = 1000;
 
         $this->createEsEnrolment($client, ['id' => 10, 'updated_at' => 900] + $this->portalBase1);
@@ -211,7 +211,7 @@ class ReindexRemoveRedundantTest extends IndexServiceTestCase
         $consumer = $app['reindex.handler.enrolment_revision'];
 
         $task = Task::create((object) []);
-        $task->portalName = PortalHelper::load($go1, $this->portalId1);
+        $task->portal = PortalHelper::load($go1, $this->portalId1);
         $task->created = 1000;
 
         $this->createEsRevisionEnrolment($client, ['id' => 10, 'updated_at' => 900] + $this->portalBase1);
@@ -251,7 +251,7 @@ class ReindexRemoveRedundantTest extends IndexServiceTestCase
         $consumer = $app['reindex.handler.event'];
 
         $task = Task::create((object) []);
-        $task->portalName = PortalHelper::load($go1, $portalId);
+        $task->portal = PortalHelper::load($go1, $portalId);
         $task->created = 1000;
 
         $this->createEsEvent($client, ['id' => 10, 'lo_id' => 10, 'updated_at' => 900] + $this->portalBase1);

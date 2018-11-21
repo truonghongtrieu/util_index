@@ -25,7 +25,7 @@ class Task implements JsonSerializable
     public $currentHandler;
     public $stats;
     public $limit    = 100;
-    public $portalName;
+    public $portal;
     public $authorId;
     public $data;
     public $alias;  # Point to main index or NOT. Default true
@@ -45,7 +45,7 @@ class Task implements JsonSerializable
         $task = new Task;
         $task->id = $input->id ?? null;
         $task->title = $input->title ?? null;
-        $task->portalName = $input->instance ?? null;
+        $task->portal = $input->instance ?? null;
         $task->data = $input->data ?? null;
         $task->status = $input->status ?? self::NOT_STARTED;
         $task->percent = $input->percent ?? 0;
@@ -109,7 +109,7 @@ class Task implements JsonSerializable
         $array = [
             'id'        => $this->id,
             'title'     => $this->title,
-            'instance'  => $this->portalName ? $this->portalName->title : null,
+            'instance'  => $this->portal ? $this->portal->title : null,
             'percent'   => $this->percent,
             'status'    => $this->status,
             'author_id' => $this->authorId,
