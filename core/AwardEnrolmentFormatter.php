@@ -63,21 +63,24 @@ class AwardEnrolmentFormatter
             $lastStatus = AwardEnrolmentStatuses::toEsNumeric($enrolment->original->status);
         } else {
             // load from revision
-            $q = $this->award->createQueryBuilder()
-                             ->select('status')
-                             ->from('award_enrolment_revision')
-                             ->where('award_enrolment_id = :enrolment_id')
-                             ->setParameter(':enrolment_id', $enrolment->id)
-                             ->andWhere('status <> :status')
-                             ->setParameter(':status', $enrolment->status)
-                             ->orderBy('created', 'desc')
-                             ->setMaxResults(1);
-            $dbLastStatus = $q->execute()->fetchColumn();
+            $dbLastStatus = $this->award
+                ->createQueryBuilder()
+                ->select('status')
+                ->from('award_enrolment_revision')
+                ->where('award_enrolment_id = :enrolment_id')
+                ->setParameter(':enrolment_id', $enrolment->id)
+                ->andWhere('status <> :status')
+                ->setParameter(':status', $enrolment->status)
+                ->orderBy('created', 'desc')
+                ->setMaxResults(1)
+                ->execute()
+                ->fetchColumn();
+
             if ($dbLastStatus) {
                 $lastStatus = AwardEnrolmentStatuses::toEsNumeric($dbLastStatus);
             }
         }
-
+        
         $doc = [
             'id'            => (int) $enrolment->id,
             'type'          => $type,
