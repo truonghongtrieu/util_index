@@ -164,6 +164,10 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['go1.client.mq']
             );
         };
+
+        $c['ctrl.handlers'] = function (Container $c) {
+            return new ReindexHandlersController($c);
+        };
     }
 
     public function boot(Application $app)
