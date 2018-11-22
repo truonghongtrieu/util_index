@@ -2,7 +2,6 @@
 
 namespace go1\util_index\core;
 
-use App\Exception\HttpBadRequestException;
 use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
@@ -76,9 +75,7 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
     public function aware(string $event): bool
     {
         return in_array($event, [
-            Queue::PLAN_CREATE,
-            Queue::PLAN_UPDATE,
-            Queue::PLAN_DELETE,
+            Queue::PLAN_CREATE, Queue::PLAN_UPDATE, Queue::PLAN_DELETE,
             Queue::ENROLMENT_DELETE,
             Queue::RO_CREATE,
         ]);
@@ -117,7 +114,7 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
                     $this->onBulk($plan->plans, $plan->indexName);
                     break;
             }
-        } catch (HttpBadRequestException $e) {
+        } catch (Exception $e) {
             $this->history->write($routingKey, $plan->id ?? null, $e->getCode(), $e->getMessage());
         }
 
@@ -149,9 +146,8 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
         $enrolment = (PlanTypes::ENTITY_AWARD == $plan->entity_type)
             ? AwardHelper::loadEnrolmentBy($this->award, $plan->entity_id, $user->id, $plan->instance_id)
             : EnrolmentHelper::loadByLoProfileAndPortal($this->go1, $plan->entity_id, $user->profile_id, $plan->instance_id);
-        $enrolment = $enrolment ?: null;
 
-        return [$entity, $user, $enrolment, $portal];
+        return [$entity, $user, $enrolment ?: null, $portal];
     }
 
     public static function id($id)

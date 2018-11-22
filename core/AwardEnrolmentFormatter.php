@@ -80,11 +80,11 @@ class AwardEnrolmentFormatter
                 $lastStatus = AwardEnrolmentStatuses::toEsNumeric($dbLastStatus);
             }
         }
-        
+
         $doc = [
             'id'            => (int) $enrolment->id,
             'type'          => $type,
-            'profile_id'    => $user->profile_id,
+            'profile_id'    => $user->profile_id ?? 0,
             'lo_id'         => $enrolment->award_id,
             'parent_id'     => 0,
             'status'        => AwardEnrolmentStatuses::toEsNumeric($enrolment->status),
