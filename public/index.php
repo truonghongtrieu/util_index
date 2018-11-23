@@ -9,7 +9,8 @@ return call_user_func(function () {
 
     require_once APP_ROOT . '/vendor/autoload.php';
     $cnf = is_file(APP_ROOT . '/config.php') ? APP_ROOT . '/config.php' : APP_ROOT . '/config.default.php';
-    $app = new IndexService(require $cnf);
+    $cnf = require $cnf;
+    $app = new IndexService($cnf);
 
     return ('cli' === php_sapi_name()) ? $app : $app->run();
 });
