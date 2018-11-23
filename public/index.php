@@ -4,7 +4,7 @@ use go1\util_index\IndexService;
 
 return call_user_func(function () {
     if (!defined('APP_ROOT')) {
-        throw new RuntimeException('Undefined APP_ROOT');
+        define('APP_ROOT', dirname(__DIR__));
     }
 
     require_once APP_ROOT . '/vendor/autoload.php';
