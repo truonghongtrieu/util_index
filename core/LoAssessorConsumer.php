@@ -1,0 +1,139 @@
+<?php
+
+namespace go1\util_index\core;
+
+use Doctrine\DBAL\Connection;
+use Elasticsearch\Client;
+use Elasticsearch\Common\Exceptions\ElasticsearchException;
+use go1\clients\MqClient;
+use go1\util\contract\ConsumerInterface;
+use go1\util\es\Schema;
+use go1\util\lo\LoHelper;
+use go1\util\queue\Queue;
+use go1\util_index\HistoryRepository;
+use ONGR\ElasticsearchDSL\Query\Compound\BoolQuery;
+use ONGR\ElasticsearchDSL\Query\TermLevel\IdsQuery;
+use ONGR\ElasticsearchDSL\Query\TermLevel\TermQuery;
+use stdClass;
+
+class LoAssessorConsumer implements ConsumerInterface
+{
+    const RETRY_ROUTING_KEY = 'lo-index.message.retry';
+
+    protected $go1;
+    protected $es;
+    protected $history;
+    protected $enrolmentFormatter;
+    protected $waitForCompletion;
+    protected $queue;
+
+    public function __construct(
+        Connection $go1,
+        Client $client,
+        HistoryRepository $history,
+        EnrolmentFormatter $enrolmentFormatter,
+        bool $waitForCompletion,
+        MqClient $queue
+    )
+    {
+        $this->go1 = $go1;
+        $this->es = $client;
+        $this->history = $history;
+        $this->enrolmentFormatter = $enrolmentFormatter;
+        $this->waitForCompletion = $waitForCompletion;
+        $this->queue = $queue;
+    }
+
+    public function aware(string $event): bool
+    {
+        return in_array($event, [Queue::LO_SAVE_ASSESSORS, self::RETRY_ROUTING_KEY]);
+    }
+
+    public function consume(string $routingKey, stdClass $body, stdClass $context = null): bool
+    {
+        switch ($routingKey) {
+            case Queue::LO_SAVE_ASSESSORS:
+                $this->onCourseAssessorUpdated($routingKey, $body);
+                break;
+
+            case self::RETRY_ROUTING_KEY:
+                $this->onMessageRetry($body);
+                break;
+        }
+
+        return true;
+    }
+
+    protected function onMessageRetry(stdClass $data)
+    {
+        if ($data->body->numOfRetry < 3) {
+            $this->consume($data->routingKey, $data->body);
+        }
+    }
+
+    private function onCourseAssessorUpdated(string $routingKey, stdClass $body)
+    {
+        $courseId = $body->id;
+        $assessors = LoHelper::assessorIds($this->go1, $courseId);
+        try {
+            $this->es->updateByQuery([
+                'index'               => Schema::INDEX,
+                'type'                => Schema::O_LO,
+                'body'                => [
+                    'query'  => (new IdsQuery([$courseId]))->toArray(),
+                    'script' => [
+                        'inline' => implode(";", [
+                            "ctx._source.assessor = params.assessor",
+                            "ctx._source.assessors = params.assessors",
+                        ]),
+                        'params' => [
+                            'assessor'  => $this->enrolmentFormatter->assessor($assessors),
+                            'assessors' => $assessors,
+                        ],
+                    ],
+                ],
+                'wait_for_completion' => $this->waitForCompletion,
+                'conflicts'           => 'proceed',
+            ]);
+        } catch (ElasticsearchException $e) {
+            $this->history->write(Schema::O_LO, $courseId, $e->getCode(), $e->getMessage());
+        }
+
+        $response = $this->es->updateByQuery([
+            'index'               => Schema::INDEX,
+            'type'                => Schema::O_ENROLMENT,
+            'body'                => [
+                'query'  => call_user_func(
+                    function () use ($courseId) {
+                        $query = new BoolQuery();
+                        $query->add(new TermQuery('metadata.has_assessor', 0), BoolQuery::MUST);
+                        $query->add(new TermQuery('metadata.course_id', $courseId), BoolQuery::MUST);
+
+                        return $query->toArray();
+                    }
+                ),
+                'script' => [
+                    'inline' => "ctx._source.assessors = params.assessors;",
+                    'params' => ['assessors' => (count($assessors) <= 1) ? $assessors : []],
+                ],
+            ],
+            'refresh'             => true,
+            # When a course changed assessors
+            # There will be 2 messages published(ro.create then ro.delete).
+            # We need wait until each query completed to avoid conflicts.
+            'wait_for_completion' => true,
+            'conflicts'           => 'proceed',
+        ]);
+
+        $this->handleConflict($response, $routingKey, $body);
+    }
+
+    protected function handleConflict($response, $routingKey, $body)
+    {
+        $numOfConflict = $response['version_conflicts'] ?? 0;
+        if ($numOfConflict > 0) {
+            $body->numOfRetry = ($body->numOfRetry ?? 0) + 1;
+            $this->queue->queue(['routingKey' => $routingKey, 'body' => $body], self::RETRY_ROUTING_KEY);
+        }
+    }
+}
