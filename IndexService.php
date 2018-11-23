@@ -11,12 +11,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class IndexService extends GO1
 {
-    const NAME    = 'index';
-    const VERSION = Service::VERSION;
-
-    const WORKER_TASK_PROCESS  = 'worker.index.task.process';
-    const WORKER_TASK_BULK     = 'worker.index.task.bulk';
-    const WORKER_MESSAGE_RETRY = 'worker.index.message.retry';
+    const NAME                = 'index';
+    const VERSION             = Service::VERSION;
+    const WORKER_TASK_PROCESS = 'worker.index.task.process';
+    const WORKER_TASK_BULK    = 'worker.index.task.bulk';
 
     public function __construct($values = [])
     {
