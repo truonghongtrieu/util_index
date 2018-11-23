@@ -40,6 +40,8 @@ abstract class IndexServiceTestCase extends TestCase
 
     protected function getApp(): IndexService
     {
+        include APP_ROOT . '/config.default.php';
+
         putenv('ES_URL=http://localhost:9200');
 
         /** @var IndexService $app */
