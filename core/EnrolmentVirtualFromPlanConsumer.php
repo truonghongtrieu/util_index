@@ -322,15 +322,22 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
             case PlanTypes::ENTITY_AWARD:
                 return $enrolment
                     ? IndexHelper::awardEnrolmentIndices($enrolment, $entity)
-                    : EnrolmentIndexServiceProvider::planIndices($plan);
+                    : self::planIndices($plan);
 
             case PlanTypes::ENTITY_LO:
                 return $enrolment
                     ? IndexHelper::enrolmentIndices($enrolment)
-                    : EnrolmentIndexServiceProvider::planIndices($plan);
+                    : self::planIndices($plan);
         }
 
         return [];
+    }
+
+    public static function planIndices(stdClass $plan)
+    {
+        $indices[] = Schema::portalIndex($plan->instance_id);
+
+        return $indices;
     }
 
     private function updateEnrolmentDueDate(stdClass $plan, stdClass $entity, stdClass $enrolment = null, array $doc = [])
