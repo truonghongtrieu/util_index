@@ -547,8 +547,10 @@ class EnrolmentConsumer implements ConsumerInterface
             return LoShareConsumer::id($takenPortalId, $loId);
         }
 
-        if (GroupHelper::isMemberOfContentSharingGroup($this->social, $loId, $takenPortalId)) {
-            return LoContentSharingConsumer::id($loId, $takenPortalId);
+        if (!is_null($this->social)) {
+            if (GroupHelper::isMemberOfContentSharingGroup($this->social, $loId, $takenPortalId)) {
+                return LoContentSharingConsumer::id($loId, $takenPortalId);
+            }
         }
 
         return $loId;
