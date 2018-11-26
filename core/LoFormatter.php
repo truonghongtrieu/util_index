@@ -184,6 +184,10 @@ class LoFormatter
 
     public function groupIds(int $loId, $premiumOnly = true): array
     {
+        if (is_null($this->social)) {
+            return [];
+        }
+        
         $q = $this->social->createQueryBuilder();
         $q = $q->select('DISTINCT _group.id, _group.data')
                ->from('social_group_item', 'item')

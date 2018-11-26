@@ -84,7 +84,11 @@ class LoConsumer extends LearningObjectBaseConsumer
     protected function format(stdClass $lo, array $context = [])
     {
         $formatted = $this->formatter->format($lo);
-        $formatted['group_ids'] = $this->formatter->groupIds($lo->id, false);
+
+        $groupIds = $this->formatter->groupIds($lo->id, false);
+        if ($groupIds) {
+            $formatted['group_ids'] = $groupIds;
+        }
 
         return $formatted;
     }
