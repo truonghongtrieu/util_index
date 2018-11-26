@@ -3,7 +3,6 @@
 namespace go1\util_index\core;
 
 use Doctrine\DBAL\Connection;
-use go1\core\lo\event_li\index\EventFormatter;
 use go1\util\award\AwardHelper;
 use go1\util\DateTime;
 use go1\util\DB;
@@ -40,8 +39,8 @@ class LoFormatter
     private $policy;
     private $collection;
     private $accountsName;
-    private $userFormatter;
-    private $eventFormatter;
+    private $fUser;
+    private $fEvent;
     private $portalChecker;
     private $rLocation;
 
@@ -54,8 +53,8 @@ class LoFormatter
         ?Connection $policy,
         ?Connection $collection,
         string $accountsName,
-        UserFormatter $userFormatter,
-        ?EventFormatter $eventFormatter,
+        UserFormatter $fUser,
+        ?EventFormatter $fEvent,
         PortalChecker $portalChecker,
         LocationRepository $rLocation
     )
@@ -68,8 +67,8 @@ class LoFormatter
         $this->policy = $policy;
         $this->collection = $collection;
         $this->accountsName = $accountsName;
-        $this->userFormatter = $userFormatter;
-        $this->eventFormatter = $eventFormatter;
+        $this->fUser = $fUser;
+        $this->fEvent = $fEvent;
         $this->portalChecker = $portalChecker;
         $this->rLocation = $rLocation;
     }
@@ -162,7 +161,7 @@ class LoFormatter
             ];
 
             if (LiTypes::EVENT == $lo->type) {
-                $doc['event'] = $this->eventFormatter->format($lo, null, true);
+                $doc['event'] = $this->fEvent->format($lo, null, true);
             }
         }
 
@@ -175,7 +174,7 @@ class LoFormatter
         if ($authorIds = LoChecker::authorIds($db, $loId)) {
             $authors = UserHelper::loadMultiple($db, $authorIds);
             foreach ($authors as $author) {
-                $formattedAuthors[] = $this->userFormatter->format($author, true);
+                $formattedAuthors[] = $this->fUser->format($author, true);
             }
         }
 
@@ -187,7 +186,7 @@ class LoFormatter
         if (is_null($this->social)) {
             return [];
         }
-        
+
         $q = $this->social->createQueryBuilder();
         $q = $q->select('DISTINCT _group.id, _group.data')
                ->from('social_group_item', 'item')
@@ -347,7 +346,7 @@ class LoFormatter
     {
         $author = UserHelper::load($this->go1, $award->user_id);
 
-        return $author ? [$this->userFormatter->format($author, true)] : [];
+        return $author ? [$this->fUser->format($author, true)] : [];
     }
 
     private function itemCount($lo)

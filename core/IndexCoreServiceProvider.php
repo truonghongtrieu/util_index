@@ -35,6 +35,10 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
             return new AwardEnrolmentFormatter($c['dbs']['go1'], $c['dbs']['award'], $c['formatter.lo'], $c['formatter.user']);
         };
 
+        $c['formatter.event'] = function (Container $c) {
+            return new EventFormatter($c['dbs']['go1'], $c['go1.client.lo']);
+        };
+
         $c['formatter.lo'] = function (Container $c) {
             return new LoFormatter(
                 $c['dbs']['go1'],
