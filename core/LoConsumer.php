@@ -76,6 +76,10 @@ class LoConsumer extends LearningObjectBaseConsumer
             case LearningObjectIndexServiceProvider::BULK_LO:
                 $this->onBulk($lo->los, $lo->indexName);
                 break;
+
+            default:
+                trigger_error('Invalid routing key: ' . $routingKey);
+                break;
         }
 
         return true;

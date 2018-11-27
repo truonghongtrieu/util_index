@@ -5,6 +5,7 @@ namespace go1\util_index;
 use Elasticsearch\Client;
 use go1\clients\MqClient;
 use go1\util\es\Schema;
+use RuntimeException;
 
 class ElasticSearchRepository
 {
@@ -12,6 +13,7 @@ class ElasticSearchRepository
     private $waitForCompletion;
     private $queue;
     private $history;
+    private $throwBulkException = true;
 
     public function __construct(Client $client, bool $waitForCompletion, MqClient $queue, HistoryRepository $history)
     {
@@ -19,6 +21,11 @@ class ElasticSearchRepository
         $this->waitForCompletion = $waitForCompletion;
         $this->queue = $queue;
         $this->history = $history;
+
+        $_ = getenv('INDEX_SERVICE_THROW_EXCEPTION_ON_BULK_ERROR');
+        if (false !== $_) {
+            $this->throwBulkException = boolval($_);
+        }
     }
 
     public function installPortalIndex(int $portalId)
@@ -67,6 +74,13 @@ class ElasticSearchRepository
 
         $response = $this->client->bulk($params);
         $response && $this->history->bulkLog($response);
+
+        if (!empty($response['errors'])) {
+            if ($this->throwBulkException) {
+                $err = 'has error on bulk request: ' . print_r($response, true);
+                throw new RuntimeException($err);
+            }
+        }
 
         return $response;
     }
