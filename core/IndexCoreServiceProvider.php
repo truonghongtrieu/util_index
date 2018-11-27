@@ -50,7 +50,7 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['dbs']['collection'] ?? null,
                 $c['accounts_name'],
                 $c['formatter.user'],
-                $c['formatter.event'] ?? null,
+                $c['formatter.event'],
                 $c['portal_checker'],
                 $c['location.repository']
             );
