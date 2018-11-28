@@ -116,9 +116,9 @@ class LoContentSharingConsumer extends LoShareConsumer
         return [null, null];
     }
 
-    public static function id(int $loId, int $instanceId)
+    public static function id(int $loId, int $portalId)
     {
-        return "shared:$loId:$instanceId";
+        return "shared:$loId:$portalId";
     }
 
     public static function isPassiveContentSharing(stdClass $group)
