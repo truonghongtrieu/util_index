@@ -79,7 +79,7 @@ class LoFormatter
         $portal = PortalHelper::load($this->go1, $lo->instance_id);
         $oldTags = $this->processTags($lo->tags ?? []);
         $newTags = $this->processTags($this->getLoTags($lo->id, $lo->instance_id));
-        $tags = array_unique(array_merge($newTags, $oldTags));
+        $tags = array_values(array_unique(array_merge($newTags, $oldTags)));
 
         // Code clone from https://code.go1.com.au/microservices/algolia/blob/master/domain/LoRepository.php#L86
         if (!is_null($this->vote)) {
