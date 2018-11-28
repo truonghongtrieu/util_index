@@ -9,7 +9,7 @@ use RuntimeException;
 
 class ElasticSearchRepository
 {
-    private $client;
+    public  $client;
     private $waitForCompletion;
     private $queue;
     private $history;
