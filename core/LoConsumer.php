@@ -5,6 +5,7 @@ namespace go1\util_index\core;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use Exception;
 use go1\core\lo\index\LearningObjectIndexServiceProvider;
+use go1\util\enrolment\EnrolmentHelper;
 use go1\util\es\Schema;
 use go1\util\lo\LoHelper;
 use go1\util\queue\Queue;
@@ -46,7 +47,13 @@ class LoConsumer extends LearningObjectBaseConsumer
 
             case Queue::ENROLMENT_CREATE:
             case Queue::ENROLMENT_DELETE:
-                $enrolment = $lo;
+                $enrolment = &$lo;
+
+                // Don't need process indexing job if portal is disabled.
+                if (!EnrolmentHelper::isEmbeddedPortalActive($enrolment)) {
+                    break;
+                }
+
                 $this->updateTotalEnrolment($enrolment->lo_id);
                 break;
 
