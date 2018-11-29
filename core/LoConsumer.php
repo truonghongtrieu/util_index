@@ -85,7 +85,7 @@ class LoConsumer extends LearningObjectBaseConsumer
         return true;
     }
 
-    protected function format(stdClass $lo, array $context = [])
+    protected function format(stdClass $lo)
     {
         $formatted = $this->formatter->format($lo);
 
