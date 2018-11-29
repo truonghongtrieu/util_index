@@ -100,7 +100,7 @@ class LoConsumer extends LearningObjectBaseConsumer
     protected function onCreate(stdClass $lo, $indices = null)
     {
         try {
-            if (!LoHelper::isPortalActive($lo)) {
+            if (!LoHelper::isEmbeddedPortalActive($lo)) {
                 return null;
             }
 
