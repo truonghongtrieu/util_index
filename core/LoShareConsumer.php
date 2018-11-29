@@ -32,9 +32,9 @@ class LoShareConsumer extends LoConsumer
         switch ($routingKey) {
             case Queue::LO_UPDATE:
                 $loIds = [$lo->id];
-                $numOfInstance = $loIds ? $this->numOfInstance($loIds) : 0;
-                if ($numOfInstance > 0) {
-                    for ($offset = 0; $offset < $numOfInstance; $offset += static::$limit) {
+                $numOfPortal = $loIds ? $this->numOfPortal($loIds) : 0;
+                if ($numOfPortal > 0) {
+                    for ($offset = 0; $offset < $numOfPortal; $offset += static::$limit) {
                         $this->queue->queue(
                             [
                                 'originalKey' => $routingKey,
@@ -129,7 +129,7 @@ class LoShareConsumer extends LoConsumer
         }
     }
 
-    private function numOfInstance(array $loIds)
+    private function numOfPortal(array $loIds)
     {
         $sql = 'SELECT count(instance_id) FROM gc_lo_group WHERE lo_id IN (?)';
 

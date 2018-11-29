@@ -9,7 +9,7 @@ use go1\core\customer\account\index\AccountReindex;
 use go1\core\learning_record\enrolment\index\EnrolmentReindex;
 use go1\core\lo\award\index\AwardEnrolmentConsumer;
 use go1\core\lo\event_li\index\tests\mocks\EventEnrolmentMockTrait;
-use go1\core\lo\index\LoReindex;
+use go1\core\lo\index\reindex\LoReindex;
 use go1\util\award\AwardEnrolmentStatuses;
 use go1\util\award\AwardHelper;
 use go1\util\award\AwardItemTypes;

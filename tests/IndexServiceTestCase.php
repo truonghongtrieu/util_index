@@ -92,10 +92,10 @@ abstract class IndexServiceTestCase extends TestCase
 
             return $history;
         });
-
         $this->mockMqClientThenConsume
             ? $this->mockMqClientToDoConsume($app)
             : $this->mockMqClient($app);
+
         $this->appInstall($app);
 
         return $app;
@@ -157,8 +157,10 @@ abstract class IndexServiceTestCase extends TestCase
                             return true;
                         }
 
-                        $req = Request::create('/consume?jwt=' . UserHelper::ROOT_JWT, 'POST');
-                        $req->request->replace(['routingKey' => $routingKey, 'body' => (object) $body]);
+                        $req = Request::create('/consume?jwt=' . UserHelper::ROOT_JWT, 'POST', [
+                            'routingKey' => $routingKey,
+                            'body'       => (object) $body,
+                        ]);
                         $res = $app->handle($req);
                         $this->assertEquals(204, $res->getStatusCode());
 
