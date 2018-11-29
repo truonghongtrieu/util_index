@@ -100,6 +100,10 @@ class LoConsumer extends LearningObjectBaseConsumer
     protected function onCreate(stdClass $lo, $indices = null)
     {
         try {
+            if (!LoHelper::isPortalActive($lo)) {
+                return null;
+            }
+
             $this->repository->create([
                 'type' => Schema::O_LO,
                 'id'   => $lo->id,
