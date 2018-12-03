@@ -3,6 +3,11 @@
 namespace go1\util_index\core;
 
 use go1\util\location\LocationRepository;
+use go1\util_index\core\consumer\EnrolmentAssessorConsumer;
+use go1\util_index\core\consumer\EnrolmentConsumer;
+use go1\util_index\core\consumer\EnrolmentVirtualFromPlanConsumer;
+use go1\util_index\core\consumer\LoConsumer;
+use go1\util_index\core\consumer\TaskConsumer;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 use ReflectionClass;
@@ -91,7 +96,6 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
 
         $c['consumer.enrolment'] = function (Container $c) {
             return new EnrolmentConsumer(
-                $c['dispatcher'],
                 $c['go1.client.es'],
                 $c['history.repository'],
                 $c['dbs']['default'],
@@ -109,7 +113,6 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
 
         $c['consumer.plan.enrolment-virtual'] = function (Container $c) {
             return new EnrolmentVirtualFromPlanConsumer(
-                $c['dispatcher'],
                 $c['go1.client.es'],
                 $c['history.repository'],
                 $c['dbs']['default'],
@@ -137,14 +140,7 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
         };
 
         $c['consumer.task'] = function (Container $c) {
-            return new TaskConsumer(
-                $c['dbs']['default'],
-                $c,
-                $c['go1.client.mq'],
-                $c['task.repository'],
-                $c['history.repository'],
-                $c['logger']
-            );
+            return new TaskConsumer($c['task.repository'], $c['history.repository']);
         };
 
         $c['consumers'] = function (Container $c) {

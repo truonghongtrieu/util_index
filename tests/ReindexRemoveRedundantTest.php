@@ -3,8 +3,8 @@
 namespace go1\util_index\tests;
 
 use Elasticsearch\Client;
-use go1\core\learning_record\enrolment\index\EnrolmentReindex;
-use go1\core\learning_record\enrolment\index\EnrolmentRevisionReindex;
+use go1\core\learning_record\enrolment\index\reindex\EnrolmentReindex;
+use go1\core\learning_record\enrolment\index\reindex\EnrolmentRevisionReindex;
 use go1\core\lo\event_li\index\EventReindex;
 use go1\core\lo\index\reindex\LoContentSharingReindex;
 use go1\core\lo\index\reindex\LoReindex;
@@ -16,7 +16,7 @@ use go1\util\es\mock\EsLoMockTrait;
 use go1\util\es\Schema;
 use go1\util\portal\PortalHelper;
 use go1\util\schema\mock\PortalMockTrait;
-use go1\util_index\core\LoShareConsumer;
+use go1\util_index\core\consumer\LoShareConsumer;
 use go1\util_index\IndexService;
 use go1\util_index\task\Task;
 

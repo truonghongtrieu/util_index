@@ -1,6 +1,6 @@
 <?php
 
-namespace go1\util_index\core;
+namespace go1\util_index\core\consumer;
 
 use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
@@ -10,6 +10,7 @@ use go1\util\contract\ConsumerInterface;
 use go1\util\es\Schema;
 use go1\util\lo\LoHelper;
 use go1\util\queue\Queue;
+use go1\util_index\core\EnrolmentFormatter;
 use go1\util_index\HistoryRepository;
 use ONGR\ElasticsearchDSL\Query\Compound\BoolQuery;
 use ONGR\ElasticsearchDSL\Query\TermLevel\IdsQuery;
@@ -34,8 +35,7 @@ class LoAssessorConsumer implements ConsumerInterface
         EnrolmentFormatter $enrolmentFormatter,
         bool $waitForCompletion,
         MqClient $queue
-    )
-    {
+    ) {
         $this->go1 = $go1;
         $this->es = $client;
         $this->history = $history;

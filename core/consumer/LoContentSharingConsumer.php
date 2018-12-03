@@ -1,6 +1,6 @@
 <?php
 
-namespace go1\util_index\core;
+namespace go1\util_index\core\consumer;
 
 use Aws\ElasticsearchService\Exception\ElasticsearchServiceException;
 use Doctrine\DBAL\Connection;
@@ -14,6 +14,8 @@ use go1\util\group\GroupItemTypes;
 use go1\util\lo\LoHelper;
 use go1\util\portal\PortalChecker;
 use go1\util\queue\Queue;
+use go1\util_index\core\LoFormatter;
+use go1\util_index\core\UserFormatter;
 use go1\util_index\ElasticSearchRepository;
 use go1\util_index\HistoryRepository;
 use Ramsey\Uuid\Uuid;

@@ -1,6 +1,6 @@
 <?php
 
-namespace go1\util_index\core;
+namespace go1\util_index\core\consumer;
 
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use Exception;

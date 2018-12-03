@@ -1,6 +1,6 @@
 <?php
 
-namespace go1\util_index\core;
+namespace go1\util_index\core\consumer;
 
 use go1\core\lo\index\LearningObjectIndexServiceProvider;
 use go1\util\DB;

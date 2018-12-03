@@ -1,42 +1,23 @@
 <?php
 
-namespace go1\util_index\core;
+namespace go1\util_index\core\consumer;
 
-use Doctrine\DBAL\Connection;
 use Exception;
-use go1\clients\MqClient;
 use go1\util\contract\ConsumerInterface;
 use go1\util_index\HistoryRepository;
 use go1\util_index\IndexService;
 use go1\util_index\task\TaskRepository;
-use Pimple\Container;
-use Psr\Log\LoggerInterface;
 use stdClass;
 
 class TaskConsumer implements ConsumerInterface
 {
-    private $db;
-    private $container;
-    private $queue;
     private $repository;
     private $history;
-    private $logger;
 
-    public function __construct(
-        Connection $db,
-        Container $container,
-        MqClient $queue,
-        TaskRepository $repository,
-        HistoryRepository $history,
-        LoggerInterface $logger
-    )
+    public function __construct(TaskRepository $repository, HistoryRepository $history)
     {
-        $this->db = $db;
-        $this->container = $container;
-        $this->queue = $queue;
         $this->repository = $repository;
         $this->history = $history;
-        $this->logger = $logger;
     }
 
     public function aware(string $event): bool

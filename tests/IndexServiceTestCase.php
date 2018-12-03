@@ -29,10 +29,8 @@ abstract class IndexServiceTestCase extends TestCase
 
     protected function getDatabases()
     {
-        $this->sqlite = DriverManager::getConnection(['url' => 'sqlite://sqlite::memory:']);
-
         return [
-            'default'   => $this->sqlite,
+            'default'   => $this->sqlite = DriverManager::getConnection(['url' => 'sqlite://sqlite::memory:']),
             'go1'       => $this->sqlite,
             'go1_write' => $this->sqlite,
         ];

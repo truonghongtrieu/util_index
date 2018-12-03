@@ -1,6 +1,6 @@
 <?php
 
-namespace go1\util_index\core;
+namespace go1\util_index\core\consumer;
 
 use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
@@ -12,6 +12,8 @@ use go1\util\es\Schema;
 use go1\util\lo\LoTypes;
 use go1\util\lo\TagTypes;
 use go1\util\portal\PortalChecker;
+use go1\util_index\core\LoFormatter;
+use go1\util_index\core\UserFormatter;
 use go1\util_index\ElasticSearchRepository;
 use go1\util_index\HistoryRepository;
 use ONGR\ElasticsearchDSL\Query\Compound\BoolQuery;
@@ -47,8 +49,7 @@ abstract class LearningObjectBaseConsumer implements ConsumerInterface
         ElasticSearchRepository $repository,
         MqClient $queue,
         PortalChecker $portalChecker
-    )
-    {
+    ) {
         $this->client = $client;
         $this->history = $history;
         $this->db = $db;

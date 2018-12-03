@@ -1,6 +1,6 @@
 <?php
 
-namespace go1\util_index\core;
+namespace go1\util_index\core\consumer;
 
 use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
@@ -20,6 +20,10 @@ use go1\util\plan\PlanTypes;
 use go1\util\portal\PortalHelper;
 use go1\util\queue\Queue;
 use go1\util\user\UserHelper;
+use go1\util_index\core\AccountFieldFormatter;
+use go1\util_index\core\EnrolmentFormatter;
+use go1\util_index\core\LoFormatter;
+use go1\util_index\core\UserFormatter;
 use go1\util_index\ElasticSearchRepository;
 use go1\util_index\HistoryRepository;
 use go1\util_index\IndexHelper;
@@ -28,11 +32,9 @@ use ONGR\ElasticsearchDSL\Query\TermLevel\TermQuery;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
 use stdClass;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class EnrolmentConsumer implements ConsumerInterface
 {
-    protected $dispatcher;
     protected $client;
     protected $history;
     protected $db;
@@ -47,7 +49,6 @@ class EnrolmentConsumer implements ConsumerInterface
     protected $repository;
 
     public function __construct(
-        EventDispatcherInterface $dispatcher,
         Client $client,
         HistoryRepository $history,
         Connection $db,
@@ -62,7 +63,6 @@ class EnrolmentConsumer implements ConsumerInterface
         ElasticSearchRepository $repository
     )
     {
-        $this->dispatcher = $dispatcher;
         $this->client = $client;
         $this->history = $history;
         $this->db = $db;

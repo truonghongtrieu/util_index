@@ -18,10 +18,10 @@ class IndexService extends GO1
 
     public function __construct($values = [])
     {
-        parent::__construct($values);
-
         $serviceProviders = $values['serviceProviders'] ?? [];
         unset($values['serviceProviders']);
+
+        parent::__construct($values);
 
         $this
             ->register(new UtilCoreServiceProvider)

@@ -3,7 +3,7 @@
 namespace go1\util_index\tests;
 
 use go1\core\customer\portal\index\tests\PortalReIndexTest;
-use go1\internal\index\deprecated\ReindexDataCleanupConsumer;
+use go1\internal\index\deprecated\DeprecatedReindexDataCleanupConsumer;
 use go1\util\es\mock\EsEnrolmentMockTrait;
 use go1\util\es\mock\EsEventMockTrait;
 use go1\util\es\mock\EsLoMockTrait;
@@ -22,7 +22,7 @@ class ReindexDataCleanupConsumerTest extends PortalReIndexTest
     {
         $app = parent::test();
 
-        /** @var ReindexDataCleanupConsumer $consumer */
+        /** @var DeprecatedReindexDataCleanupConsumer $consumer */
         $consumer = $app['consumer.remove_redundant_data'];
         $consumer->consume(
             ReindexServiceProvider::INDEX_REMOVE_REDUNDANT_DATA,
@@ -47,7 +47,7 @@ class ReindexDataCleanupConsumerTest extends PortalReIndexTest
     {
         $app = parent::test();
 
-        /** @var ReindexDataCleanupConsumer $consumer */
+        /** @var DeprecatedReindexDataCleanupConsumer $consumer */
         $consumer = $app['consumer.remove_redundant_data'];
         $consumer->consume(
             ReindexServiceProvider::INDEX_REMOVE_REDUNDANT_DATA,

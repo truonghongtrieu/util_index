@@ -2,7 +2,7 @@
 
 namespace go1\util_index\tests;
 
-use go1\core\customer\user\index\UserReindex;
+use go1\core\customer\user\index\reindex\UserReindex;
 use go1\util\eck\mock\EckMockTrait;
 use go1\util\payment\mock\PaymentMockTrait;
 use go1\util\schema\mock\AssignmentMockTrait;
