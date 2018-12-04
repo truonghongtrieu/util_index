@@ -77,9 +77,11 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
     public function aware(): array
     {
         return [
-            Queue::PLAN_CREATE, Queue::PLAN_UPDATE, Queue::PLAN_DELETE,
-            Queue::ENROLMENT_DELETE,
-            Queue::RO_CREATE,
+            Queue::PLAN_CREATE      => 'TODO: description',
+            Queue::PLAN_UPDATE      => 'TODO: description',
+            Queue::PLAN_DELETE      => 'TODO: description',
+            Queue::ENROLMENT_DELETE => 'TODO: description',
+            Queue::RO_CREATE        => 'TODO: description',
         ];
     }
 
