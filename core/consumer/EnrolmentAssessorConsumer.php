@@ -35,8 +35,8 @@ class EnrolmentAssessorConsumer implements ServiceConsumerInterface
     public function aware(): array
     {
         return [
-            Queue::ENROLMENT_SAVE_ASSESSORS,
-            IndexCoreServiceProvider::ENROLMENT_RETRY_ROUTING_KEY,
+            Queue::ENROLMENT_SAVE_ASSESSORS                       => 'TODO: description',
+            IndexCoreServiceProvider::ENROLMENT_RETRY_ROUTING_KEY => 'TODO: description',
         ];
     }
 
