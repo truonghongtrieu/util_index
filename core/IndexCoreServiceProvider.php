@@ -16,6 +16,8 @@ use Silex\Application;
 
 class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProviderInterface
 {
+    const ENROLMENT_RETRY_ROUTING_KEY = 'enrolment-index.message.retry';
+
     public function register(Container $c)
     {
         $c['location.repository'] = function (Container $c) {

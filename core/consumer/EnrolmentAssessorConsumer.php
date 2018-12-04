@@ -5,7 +5,6 @@ namespace go1\util_index\core\consumer;
 use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
 use go1\clients\MqClient;
-use go1\core\learning_record\enrolment\index\EnrolmentIndexServiceProvider;
 use go1\util\contract\ServiceConsumerInterface;
 use go1\util\enrolment\EnrolmentHelper;
 use go1\util\es\Schema;
@@ -13,6 +12,7 @@ use go1\util\lo\LoHelper;
 use go1\util\lo\LoTypes;
 use go1\util\queue\Queue;
 use go1\util_index\core\EnrolmentFormatter;
+use go1\util_index\core\IndexCoreServiceProvider;
 use ONGR\ElasticsearchDSL\Query\Compound\BoolQuery;
 use ONGR\ElasticsearchDSL\Query\TermLevel\TermQuery;
 use stdClass;
@@ -36,7 +36,7 @@ class EnrolmentAssessorConsumer implements ServiceConsumerInterface
     {
         return [
             Queue::ENROLMENT_SAVE_ASSESSORS,
-            EnrolmentIndexServiceProvider::RETRY_ROUTING_KEY,
+            IndexCoreServiceProvider::ENROLMENT_RETRY_ROUTING_KEY,
         ];
     }
 
@@ -47,7 +47,7 @@ class EnrolmentAssessorConsumer implements ServiceConsumerInterface
                 $this->onEnrolmentAssessorUpdated($routingKey, $msg);
                 break;
 
-            case EnrolmentIndexServiceProvider::RETRY_ROUTING_KEY:
+            case IndexCoreServiceProvider::ENROLMENT_RETRY_ROUTING_KEY:
                 if ($msg->body->numOfRetry < 3) {
                     $this->consume($msg->routingKey, $msg->body);
                 }
@@ -114,7 +114,10 @@ class EnrolmentAssessorConsumer implements ServiceConsumerInterface
         $numOfConflict = $response['version_conflicts'] ?? 0;
         if ($numOfConflict > 0) {
             $body->numOfRetry = ($body->numOfRetry ?? 0) + 1;
-            $this->queue->queue(['routingKey' => $routingKey, 'body' => $body], EnrolmentIndexServiceProvider::RETRY_ROUTING_KEY);
+            $this->queue->queue(
+                ['routingKey' => $routingKey, 'body' => $body],
+                IndexCoreServiceProvider::ENROLMENT_RETRY_ROUTING_KEY
+            );
         }
     }
 }
