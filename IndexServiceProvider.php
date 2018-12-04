@@ -61,7 +61,7 @@ class IndexServiceProvider implements ServiceProviderInterface, BootableProvider
     public function boot(Application $app)
     {
         $app->post('/install', 'ctrl.install:post');
-        $app->get('/consume', 'ctrl.consumer:getConsumersInfo');
+        $app->get('/consume', 'ctrl.consumer:get');
         $app->post('/consume', 'ctrl.consumer:post')
             ->before(function (Request $req) use ($app) {
                 return $app['middleware.consume']($req);
