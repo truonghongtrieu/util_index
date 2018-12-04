@@ -40,8 +40,7 @@ class LoContentSharingConsumer extends LoShareConsumer
         MqClient $queue,
         PortalChecker $portalChecker,
         Connection $social
-    )
-    {
+    ) {
         parent::__construct(
             $client,
             $history,

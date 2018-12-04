@@ -28,8 +28,7 @@ class UserFormatter
         ?Connection $eck,
         string $accountsName,
         AccountFieldFormatter $eckDataFormatter
-    )
-    {
+    ) {
         $this->go1 = $go1;
         $this->social = $social;
         $this->eck = $eck;

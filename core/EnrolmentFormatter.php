@@ -41,8 +41,7 @@ class EnrolmentFormatter
         string $accountsName,
         LoFormatter $loFormatter,
         UserFormatter $userFormatter
-    )
-    {
+    ) {
         $this->go1 = $go1;
         $this->assignment = $assignment;
         $this->quiz = $quiz;

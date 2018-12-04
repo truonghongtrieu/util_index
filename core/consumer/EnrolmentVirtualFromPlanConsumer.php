@@ -53,8 +53,7 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
         AccountFieldFormatter $eckDataFormatter,
         bool $waitForCompletion,
         ElasticSearchRepository $repository
-    )
-    {
+    ) {
         parent::__construct(
             $client,
             $history,

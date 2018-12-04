@@ -38,8 +38,7 @@ class ReindexTransaction
         MqClient $queue,
         Client $client,
         Container $container
-    )
-    {
+    ) {
         $this->db = $db;
         $this->go1 = $go1;
         $this->queue = $queue;

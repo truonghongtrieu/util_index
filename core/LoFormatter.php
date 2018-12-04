@@ -57,8 +57,7 @@ class LoFormatter
         ?EventFormatter $fEvent,
         PortalChecker $portalChecker,
         LocationRepository $rLocation
-    )
-    {
+    ) {
         $this->go1 = $go1;
         $this->social = $social;
         $this->award = $award;

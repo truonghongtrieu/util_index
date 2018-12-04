@@ -36,8 +36,7 @@ class TaskRepository
         Client $client,
         Container $container,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->db = $db;
         $this->go1 = $go1;
         $this->queue = $mqClient;

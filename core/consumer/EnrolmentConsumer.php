@@ -61,8 +61,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
         AccountFieldFormatter $eckDataFormatter,
         bool $waitForCompletion,
         ElasticSearchRepository $repository
-    )
-    {
+    ) {
         $this->client = $client;
         $this->history = $history;
         $this->db = $db;

@@ -35,8 +35,7 @@ class LoAssessorConsumer implements ServiceConsumerInterface
         EnrolmentFormatter $enrolmentFormatter,
         bool $waitForCompletion,
         MqClient $queue
-    )
-    {
+    ) {
         $this->go1 = $go1;
         $this->es = $client;
         $this->history = $history;

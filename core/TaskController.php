@@ -43,8 +43,7 @@ class TaskController
         HttpClient $http,
         Client $client,
         MqClient $queue
-    )
-    {
+    ) {
         $this->env = $env;
         $this->go1 = $go1;
         $this->db = $db;

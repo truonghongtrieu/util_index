@@ -49,8 +49,7 @@ abstract class LearningObjectBaseConsumer implements ServiceConsumerInterface
         ElasticSearchRepository $repository,
         MqClient $queue,
         PortalChecker $portalChecker
-    )
-    {
+    ) {
         $this->client = $client;
         $this->history = $history;
         $this->db = $db;
