@@ -23,8 +23,8 @@ class TaskConsumer implements ServiceConsumerInterface
     public function aware(): array
     {
         return [
-            IndexService::WORKER_TASK_PROCESS => 'TODO: description',
-            IndexService::WORKER_TASK_BULK    => 'TODO: description',
+            IndexService::WORKER_TASK_PROCESS => 'Process reindexing task',
+            IndexService::WORKER_TASK_BULK    => 'Process bulk reindexing task',
         ];
     }
 
