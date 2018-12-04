@@ -59,18 +59,18 @@ class LoContentSharingConsumer extends LoShareConsumer
         $this->social = $social;
     }
 
-    public function aware(string $event): bool
+    public function aware(): array
     {
-        return in_array($event, [
-            Queue::GROUP_ITEM_CREATE,
-            Queue::GROUP_ITEM_UPDATE,
-            Queue::GROUP_ITEM_DELETE,
-            Queue::LO_UPDATE,
-            LearningObjectIndexServiceProvider::BULK_CONTENT_SHARING,
-        ]);
+        return [
+            Queue::GROUP_ITEM_CREATE                                 => 'TODO: description',
+            Queue::GROUP_ITEM_UPDATE                                 => 'TODO: description',
+            Queue::GROUP_ITEM_DELETE                                 => 'TODO: description',
+            Queue::LO_UPDATE                                         => 'TODO: description',
+            LearningObjectIndexServiceProvider::BULK_CONTENT_SHARING => 'TODO: description',
+        ];
     }
 
-    public function consume(string $routingKey, stdClass $body, stdClass $context = null): bool
+    public function consume(string $routingKey, stdClass $body, stdClass $context = null)
     {
         switch ($routingKey) {
             case Queue::GROUP_ITEM_CREATE:
@@ -92,8 +92,6 @@ class LoContentSharingConsumer extends LoShareConsumer
                 $this->onBulk($body->items, $body->indexName);
                 break;
         }
-
-        return true;
     }
 
     private function isActiveItem(stdClass $item)

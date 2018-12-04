@@ -6,7 +6,7 @@ use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
 use go1\clients\MqClient;
 use go1\core\learning_record\enrolment\index\EnrolmentIndexServiceProvider;
-use go1\util\contract\ConsumerInterface;
+use go1\util\contract\ServiceConsumerInterface;
 use go1\util\enrolment\EnrolmentHelper;
 use go1\util\es\Schema;
 use go1\util\lo\LoHelper;
@@ -17,7 +17,7 @@ use ONGR\ElasticsearchDSL\Query\Compound\BoolQuery;
 use ONGR\ElasticsearchDSL\Query\TermLevel\TermQuery;
 use stdClass;
 
-class EnrolmentAssessorConsumer implements ConsumerInterface
+class EnrolmentAssessorConsumer implements ServiceConsumerInterface
 {
     private $client;
     private $go1;
@@ -32,9 +32,12 @@ class EnrolmentAssessorConsumer implements ConsumerInterface
         $this->queue = $queue;
     }
 
-    public function aware(string $event): bool
+    public function aware(): array
     {
-        return in_array($event, [Queue::ENROLMENT_SAVE_ASSESSORS, EnrolmentIndexServiceProvider::RETRY_ROUTING_KEY]);
+        return [
+            Queue::ENROLMENT_SAVE_ASSESSORS,
+            EnrolmentIndexServiceProvider::RETRY_ROUTING_KEY,
+        ];
     }
 
     public function consume(string $routingKey, stdClass $msg, stdClass $context = null): bool

@@ -74,13 +74,13 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
         $this->awardEnrolmentFormatter = $awardEnrolmentFormatter;
     }
 
-    public function aware(string $event): bool
+    public function aware(): array
     {
-        return in_array($event, [
+        return [
             Queue::PLAN_CREATE, Queue::PLAN_UPDATE, Queue::PLAN_DELETE,
             Queue::ENROLMENT_DELETE,
             Queue::RO_CREATE,
-        ]);
+        ];
     }
 
     public function consume(string $routingKey, stdClass $plan, stdClass $context = null): bool

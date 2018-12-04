@@ -6,7 +6,7 @@ use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use go1\clients\MqClient;
-use go1\util\contract\ConsumerInterface;
+use go1\util\contract\ServiceConsumerInterface;
 use go1\util\es\Schema;
 use go1\util\lo\LoHelper;
 use go1\util\queue\Queue;
@@ -17,7 +17,7 @@ use ONGR\ElasticsearchDSL\Query\TermLevel\IdsQuery;
 use ONGR\ElasticsearchDSL\Query\TermLevel\TermQuery;
 use stdClass;
 
-class LoAssessorConsumer implements ConsumerInterface
+class LoAssessorConsumer implements ServiceConsumerInterface
 {
     const RETRY_ROUTING_KEY = 'lo-index.message.retry';
 
@@ -35,7 +35,8 @@ class LoAssessorConsumer implements ConsumerInterface
         EnrolmentFormatter $enrolmentFormatter,
         bool $waitForCompletion,
         MqClient $queue
-    ) {
+    )
+    {
         $this->go1 = $go1;
         $this->es = $client;
         $this->history = $history;
@@ -44,12 +45,15 @@ class LoAssessorConsumer implements ConsumerInterface
         $this->queue = $queue;
     }
 
-    public function aware(string $event): bool
+    public function aware(): array
     {
-        return in_array($event, [Queue::LO_SAVE_ASSESSORS, self::RETRY_ROUTING_KEY]);
+        return [
+            Queue::LO_SAVE_ASSESSORS => 'TODO: description',
+            self::RETRY_ROUTING_KEY  => 'TODO: description',
+        ];
     }
 
-    public function consume(string $routingKey, stdClass $body, stdClass $context = null): bool
+    public function consume(string $routingKey, stdClass $body, stdClass $context = null)
     {
         switch ($routingKey) {
             case Queue::LO_SAVE_ASSESSORS:
@@ -60,8 +64,6 @@ class LoAssessorConsumer implements ConsumerInterface
                 $this->onMessageRetry($body);
                 break;
         }
-
-        return true;
     }
 
     protected function onMessageRetry(stdClass $data)

@@ -3,13 +3,13 @@
 namespace go1\util_index\core\consumer;
 
 use Exception;
-use go1\util\contract\ConsumerInterface;
+use go1\util\contract\ServiceConsumerInterface;
 use go1\util_index\HistoryRepository;
 use go1\util_index\IndexService;
 use go1\util_index\task\TaskRepository;
 use stdClass;
 
-class TaskConsumer implements ConsumerInterface
+class TaskConsumer implements ServiceConsumerInterface
 {
     private $repository;
     private $history;
@@ -20,15 +20,17 @@ class TaskConsumer implements ConsumerInterface
         $this->history = $history;
     }
 
-    public function aware(string $event): bool
+    public function aware(): array
     {
-        return in_array($event, [IndexService::WORKER_TASK_PROCESS, IndexService::WORKER_TASK_BULK]);
+        return [
+            IndexService::WORKER_TASK_PROCESS => 'TODO: description',
+            IndexService::WORKER_TASK_BULK    => 'TODO: description',
+        ];
     }
 
-    public function consume(string $routingKey, stdClass $data, stdClass $context = null): bool
+    public function consume(string $routingKey, stdClass $data, stdClass $context = null)
     {
         switch ($routingKey) {
-
             case IndexService::WORKER_TASK_PROCESS:
                 $this->process($data);
                 break;
@@ -37,8 +39,6 @@ class TaskConsumer implements ConsumerInterface
                 $this->onBulkComplete($data, $context);
                 break;
         }
-
-        return true;
     }
 
     private function process(stdClass &$data)

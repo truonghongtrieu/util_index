@@ -7,7 +7,7 @@ use Elasticsearch\Client;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use Exception;
 use go1\core\learning_record\enrolment\index\EnrolmentIndexServiceProvider;
-use go1\util\contract\ConsumerInterface;
+use go1\util\contract\ServiceConsumerInterface;
 use go1\util\enrolment\EnrolmentHelper;
 use go1\util\enrolment\EnrolmentTypes;
 use go1\util\es\Schema;
@@ -33,7 +33,7 @@ use Ramsey\Uuid\Uuid;
 use RuntimeException;
 use stdClass;
 
-class EnrolmentConsumer implements ConsumerInterface
+class EnrolmentConsumer implements ServiceConsumerInterface
 {
     protected $client;
     protected $history;
@@ -77,26 +77,26 @@ class EnrolmentConsumer implements ConsumerInterface
         $this->repository = $repository;
     }
 
-    public function aware(string $event): bool
+    public function aware(): array
     {
-        return in_array($event, [
-            Queue::ENROLMENT_CREATE,
-            Queue::ENROLMENT_UPDATE,
-            Queue::ENROLMENT_DELETE,
-            Queue::LO_UPDATE,
-            Queue::USER_UPDATE,
-            Queue::USER_DELETE,
-            Queue::GROUP_ITEM_CREATE,
-            Queue::GROUP_ITEM_DELETE,
-            Queue::ECK_CREATE,
-            Queue::ECK_UPDATE,
-            Queue::ECK_DELETE,
-            Queue::QUIZ_USER_ANSWER_CREATE,
-            Queue::QUIZ_USER_ANSWER_UPDATE,
-        ]);
+        return [
+            Queue::ENROLMENT_CREATE        => 'TODO: description',
+            Queue::ENROLMENT_UPDATE        => 'TODO: description',
+            Queue::ENROLMENT_DELETE        => 'TODO: description',
+            Queue::LO_UPDATE               => 'TODO: description',
+            Queue::USER_UPDATE             => 'TODO: description',
+            Queue::USER_DELETE             => 'TODO: description',
+            Queue::GROUP_ITEM_CREATE       => 'TODO: description',
+            Queue::GROUP_ITEM_DELETE       => 'TODO: description',
+            Queue::ECK_CREATE              => 'TODO: description',
+            Queue::ECK_UPDATE              => 'TODO: description',
+            Queue::ECK_DELETE              => 'TODO: description',
+            Queue::QUIZ_USER_ANSWER_CREATE => 'TODO: description',
+            Queue::QUIZ_USER_ANSWER_UPDATE => 'TODO: description',
+        ];
     }
 
-    public function consume(string $routingKey, stdClass $enrolment, stdClass $context = null): bool
+    public function consume(string $routingKey, stdClass $enrolment, stdClass $context = null)
     {
         switch ($routingKey) {
             case Queue::ENROLMENT_CREATE:
@@ -162,8 +162,6 @@ class EnrolmentConsumer implements ConsumerInterface
                 $this->onBulk($enrolment->enrolments, $enrolment->indexName, $enrolment->marketplace ?? false);
                 break;
         }
-
-        return true;
     }
 
     protected function format(stdClass $enrolment)

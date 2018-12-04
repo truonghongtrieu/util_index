@@ -2,7 +2,7 @@
 
 namespace go1\util_index;
 
-use go1\util\consume\ConsumeController;
+use go1\util\contract\ServiceConsumeController;
 use go1\util_index\controller\InstallController;
 use go1\util_index\task\TaskRepository;
 use Pimple\Container;
@@ -20,7 +20,7 @@ class IndexServiceProvider implements ServiceProviderInterface, BootableProvider
         };
 
         $c['ctrl.consumer'] = function (Container $c) {
-            return new ConsumeController($c['consumers'], $c['logger'], $c['access_checker']);
+            return new ServiceConsumeController($c['consumers'], $c['logger']);
         };
 
         $c['history.repository'] = function (Container $c) {
@@ -61,6 +61,7 @@ class IndexServiceProvider implements ServiceProviderInterface, BootableProvider
     public function boot(Application $app)
     {
         $app->post('/install', 'ctrl.install:post');
+        $app->get('/consume', 'ctrl.consumer:getConsumersInfo');
         $app->post('/consume', 'ctrl.consumer:post')
             ->before(function (Request $req) use ($app) {
                 return $app['middleware.consume']($req);

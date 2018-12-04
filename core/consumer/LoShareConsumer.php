@@ -16,18 +16,21 @@ class LoShareConsumer extends LoConsumer
 {
     public static $limit = 200;
 
-    public function aware(string $event): bool
+    public function aware(): array
     {
-        return in_array($event, [
-            Queue::LO_UPDATE,
-            Queue::LO_GROUP_CREATE, Queue::LO_GROUP_DELETE,
-            Queue::CUSTOM_TAG_PUSH, Queue::CUSTOM_TAG_CREATE, Queue::CUSTOM_TAG_DELETE,
-            LearningObjectIndexServiceProvider::INDEX_SHARE_LO,
-            LearningObjectIndexServiceProvider::BULK_LO_SHARE,
-        ]);
+        return [
+            Queue::LO_UPDATE                                   => 'TODO: description',
+            Queue::LO_GROUP_CREATE                             => 'TODO: description',
+            Queue::LO_GROUP_DELETE                             => 'TODO: description',
+            Queue::CUSTOM_TAG_PUSH                             => 'TODO: description',
+            Queue::CUSTOM_TAG_CREATE                           => 'TODO: description',
+            Queue::CUSTOM_TAG_DELETE                           => 'TODO: description',
+            LearningObjectIndexServiceProvider::INDEX_SHARE_LO => 'TODO: description',
+            LearningObjectIndexServiceProvider::BULK_LO_SHARE  => 'TODO: description',
+        ];
     }
 
-    public function consume(string $routingKey, stdClass $lo, stdClass $context = null): bool
+    public function consume(string $routingKey, stdClass $lo, stdClass $context = null)
     {
         switch ($routingKey) {
             case Queue::LO_UPDATE:
@@ -70,8 +73,6 @@ class LoShareConsumer extends LoConsumer
                 $this->onBulk($lo->los, $lo->indexName);
                 break;
         }
-
-        return true;
     }
 
     private function onTagUpdate(stdClass $customTag, string $routingKey)
@@ -129,7 +130,7 @@ class LoShareConsumer extends LoConsumer
         }
     }
 
-    private function numOfPortal(array $loIds)
+    private function numOfPortal(array $loIds): int
     {
         $sql = 'SELECT count(instance_id) FROM gc_lo_group WHERE lo_id IN (?)';
 

@@ -19,18 +19,24 @@ use stdClass;
 
 class LoConsumer extends LearningObjectBaseConsumer
 {
-    public function aware(string $event): bool
+    public function aware(): array
     {
-        return in_array($event, [
-            Queue::PORTAL_UPDATE,
-            Queue::USER_UPDATE, Queue::USER_DELETE,
-            Queue::LO_CREATE, Queue::LO_UPDATE, Queue::LO_DELETE,
-            Queue::ENROLMENT_CREATE, Queue::ENROLMENT_DELETE,
-            Queue::VOTE_CREATE, Queue::VOTE_UPDATE, Queue::VOTE_DELETE,
-        ]);
+        return [
+            Queue::PORTAL_UPDATE    => 'TODO: description',
+            Queue::USER_UPDATE      => 'TODO: description',
+            Queue::USER_DELETE      => 'TODO: description',
+            Queue::LO_CREATE        => 'TODO: description',
+            Queue::LO_UPDATE        => 'TODO: description',
+            Queue::LO_DELETE        => 'TODO: description',
+            Queue::ENROLMENT_CREATE => 'TODO: description',
+            Queue::ENROLMENT_DELETE => 'TODO: description',
+            Queue::VOTE_CREATE      => 'TODO: description',
+            Queue::VOTE_UPDATE      => 'TODO: description',
+            Queue::VOTE_DELETE      => 'TODO: description',
+        ];
     }
 
-    public function consume(string $routingKey, stdClass $lo, stdClass $context = null): bool
+    public function consume(string $routingKey, stdClass $lo, stdClass $context = null)
     {
         switch ($routingKey) {
             case Queue::LO_CREATE:
@@ -88,14 +94,11 @@ class LoConsumer extends LearningObjectBaseConsumer
                 trigger_error('Invalid routing key: ' . $routingKey);
                 break;
         }
-
-        return true;
     }
 
     protected function format(stdClass $lo)
     {
         $formatted = $this->formatter->format($lo);
-
         $groupIds = $this->formatter->groupIds($lo->id, false);
         if ($groupIds) {
             $formatted['group_ids'] = $groupIds;

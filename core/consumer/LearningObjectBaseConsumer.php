@@ -6,7 +6,7 @@ use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use go1\clients\MqClient;
-use go1\util\contract\ConsumerInterface;
+use go1\util\contract\ServiceConsumerInterface;
 use go1\util\es\dsl\TermsAggregation;
 use go1\util\es\Schema;
 use go1\util\lo\LoTypes;
@@ -23,7 +23,7 @@ use ONGR\ElasticsearchDSL\Query\TermLevel\TermsQuery;
 use ONGR\ElasticsearchDSL\Search;
 use stdClass;
 
-abstract class LearningObjectBaseConsumer implements ConsumerInterface
+abstract class LearningObjectBaseConsumer implements ServiceConsumerInterface
 {
     protected $client;
     protected $history;
@@ -49,7 +49,8 @@ abstract class LearningObjectBaseConsumer implements ConsumerInterface
         ElasticSearchRepository $repository,
         MqClient $queue,
         PortalChecker $portalChecker
-    ) {
+    )
+    {
         $this->client = $client;
         $this->history = $history;
         $this->db = $db;

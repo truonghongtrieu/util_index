@@ -102,23 +102,23 @@ abstract class IndexServiceTestCase extends TestCase
     protected function mockMqClient(IndexService $app)
     {
         $app->extend('go1.client.mq', function () {
-            $mqClient = $this->getMockBuilder(MqClient::class)->disableOriginalConstructor()->setMethods(['queue', 'publish'])->getMock();
+            $queue = $this->getMockBuilder(MqClient::class)->disableOriginalConstructor()->setMethods(['queue', 'publish'])->getMock();
 
-            $mqClient
+            $queue
                 ->expects($this->any())
                 ->method('publish')
                 ->willReturnCallback(function ($body, $routingKey) {
                     $this->messages[$routingKey][] = $body;
                 });
 
-            $mqClient
+            $queue
                 ->expects($this->any())
                 ->method('queue')
                 ->willReturnCallback(function ($body, $routingKey) {
                     $this->messages[$routingKey][] = $body;
                 });
 
-            return $mqClient;
+            return $queue;
         });
     }
 
