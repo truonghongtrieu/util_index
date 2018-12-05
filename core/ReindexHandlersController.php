@@ -56,8 +56,10 @@ class ReindexHandlersController
             return $priorities[$name1] > $priorities[$name2];
         };
 
-        uksort($handlers['portal'], $sortByPriority);
-        uksort($handlers['portal-single'], $sortByPriority);
+        if ($handlers) {
+            uksort($handlers['portal'], $sortByPriority);
+            uksort($handlers['portal-single'], $sortByPriority);
+        }
 
         return new JsonResponse($handlers);
     }
