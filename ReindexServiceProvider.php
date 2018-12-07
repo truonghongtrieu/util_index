@@ -7,9 +7,6 @@ use Pimple\ServiceProviderInterface;
 
 class ReindexServiceProvider implements ServiceProviderInterface
 {
-    const WORKER_REINDEX              = 'worker.index.reindex';
-    const INDEX_REMOVE_REDUNDANT_DATA = 'worker.index.remove-redundant-data';
-
     public function register(Container $c)
     {
         $c['reindex.transaction'] = function (Container $c) {

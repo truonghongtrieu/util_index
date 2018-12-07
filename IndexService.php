@@ -13,8 +13,12 @@ class IndexService extends GO1
 {
     const NAME                = SERVICE_NAME;
     const VERSION             = Service::VERSION;
+
+    // routingKeys
     const WORKER_TASK_PROCESS = TASK_PROCESS_ROUTING_KEY;
     const WORKER_TASK_BULK    = TASK_BULK_ROUTING_KEY;
+    const REINDEX_START       = REINDEX_ROUTING_KEY;
+    const REINDEX_CLEANUP     = REINDEX_CLEANUP;
 
     public function __construct($values = [])
     {

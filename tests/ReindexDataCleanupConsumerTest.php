@@ -3,13 +3,13 @@
 namespace go1\util_index\tests;
 
 use go1\core\customer\portal\index\tests\PortalReIndexTest;
-use go1\internal\index\deprecated\DeprecatedReindexDataCleanupConsumer;
+use go1\internal\index\deprecated\DeprecatedReindexCleanupConsumer;
 use go1\util\es\mock\EsEnrolmentMockTrait;
 use go1\util\es\mock\EsEventMockTrait;
 use go1\util\es\mock\EsLoMockTrait;
 use go1\util\es\mock\EsUserMockTrait;
 use go1\util\es\Schema;
-use go1\util_index\ReindexServiceProvider;
+use go1\util_index\IndexService;
 
 class ReindexDataCleanupConsumerTest extends PortalReIndexTest
 {
@@ -22,15 +22,12 @@ class ReindexDataCleanupConsumerTest extends PortalReIndexTest
     {
         $app = parent::test();
 
-        /** @var DeprecatedReindexDataCleanupConsumer $consumer */
+        /** @var DeprecatedReindexCleanupConsumer $consumer */
         $consumer = $app['consumer.remove_redundant_data'];
-        $consumer->consume(
-            ReindexServiceProvider::INDEX_REMOVE_REDUNDANT_DATA,
-            (object) [
-                'portalId' => $this->portalId,
-                'fromDate' => $time = time() + 2,
-            ]
-        );
+        $consumer->consume(IndexService::REINDEX_CLEANUP, (object) [
+            'portalId' => $this->portalId,
+            'fromDate' => $time = time() + 2,
+        ]);
 
         $client = $this->client($app);
         $base = ['routing' => $this->portalId, 'instance_id' => $this->portalId];
@@ -47,12 +44,9 @@ class ReindexDataCleanupConsumerTest extends PortalReIndexTest
     {
         $app = parent::test();
 
-        /** @var DeprecatedReindexDataCleanupConsumer $consumer */
+        /** @var DeprecatedReindexCleanupConsumer $consumer */
         $consumer = $app['consumer.remove_redundant_data'];
-        $consumer->consume(
-            ReindexServiceProvider::INDEX_REMOVE_REDUNDANT_DATA,
-            (object) ['portalId' => $this->portalId, 'fromDate' => time() + 1]
-        );
+        $consumer->consume(IndexService::REINDEX_CLEANUP, (object) ['portalId' => $this->portalId, 'fromDate' => time() + 1]);
 
         $client = $this->client($app);
         $response = $client->search(['index' => Schema::portalIndex($this->portalId), '_source' => false]);
