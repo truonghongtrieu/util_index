@@ -2,7 +2,6 @@
 
 namespace go1\util_index;
 
-use go1\core\learning_record\enrolment\index\reindex\ManualRecordReindex;
 use go1\core\learning_record\enrolment\index\reindex\PlanReindex;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
@@ -22,10 +21,6 @@ class ReindexServiceProvider implements ServiceProviderInterface
                 $c['go1.client.es'],
                 $c
             );
-        };
-
-        $c['reindex.handler.manual_record'] = function (Container $c) {
-            return new ManualRecordReindex($c['dbs']['enrolment'], $c['consumer.manual_record']);
         };
 
         $c['reindex.handler.plan'] = function (Container $c) {
