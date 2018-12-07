@@ -4,7 +4,7 @@ namespace go1\util_index\core\consumer;
 
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use Exception;
-use go1\core\lo\index\LearningObjectIndexServiceProvider;
+use go1\core\lo\index\MicroService as LoIndexService;
 use go1\util\enrolment\EnrolmentHelper;
 use go1\util\es\Schema;
 use go1\util\lo\LoHelper;
@@ -86,7 +86,7 @@ class LoConsumer extends LearningObjectBaseConsumer
                 }
                 break;
 
-            case LearningObjectIndexServiceProvider::BULK_LO:
+            case LoIndexService::BULK_LO:
                 $this->onBulk($lo->los, $lo->indexName);
                 break;
 

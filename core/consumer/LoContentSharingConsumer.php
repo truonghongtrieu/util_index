@@ -6,7 +6,7 @@ use Aws\ElasticsearchService\Exception\ElasticsearchServiceException;
 use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
 use go1\clients\MqClient;
-use go1\core\lo\index\LearningObjectIndexServiceProvider;
+use go1\core\lo\index\MicroService as LoIndexService;
 use go1\util\es\Schema;
 use go1\util\group\GroupHelper;
 use go1\util\group\GroupItemStatus;
@@ -61,11 +61,11 @@ class LoContentSharingConsumer extends LoShareConsumer
     public function aware(): array
     {
         return [
-            Queue::GROUP_ITEM_CREATE                                 => 'TODO: description',
-            Queue::GROUP_ITEM_UPDATE                                 => 'TODO: description',
-            Queue::GROUP_ITEM_DELETE                                 => 'TODO: description',
-            Queue::LO_UPDATE                                         => 'TODO: description',
-            LearningObjectIndexServiceProvider::BULK_CONTENT_SHARING => 'TODO: description',
+            Queue::GROUP_ITEM_CREATE             => 'TODO: description',
+            Queue::GROUP_ITEM_UPDATE             => 'TODO: description',
+            Queue::GROUP_ITEM_DELETE             => 'TODO: description',
+            Queue::LO_UPDATE                     => 'TODO: description',
+            LoIndexService::BULK_CONTENT_SHARING => 'TODO: description',
         ];
     }
 
@@ -87,7 +87,7 @@ class LoContentSharingConsumer extends LoShareConsumer
                 $lo && $this->onItemDelete($body, $lo);
                 break;
 
-            case LearningObjectIndexServiceProvider::BULK_CONTENT_SHARING:
+            case LoIndexService::BULK_CONTENT_SHARING:
                 $this->onBulk($body->items, $body->indexName);
                 break;
         }

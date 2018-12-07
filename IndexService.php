@@ -47,7 +47,7 @@ class IndexService extends GO1
                 $data = $input ? json_decode($input, true) : [];
                 $routingKey = $data['routingKey'] ?? '';
                 if (is_string($routingKey)) {
-                    if (in_array($routingKey, [IndexService::WORKER_TASK_PROCESS, IndexService::WORKER_TASK_BULK])) {
+                    if (in_array($routingKey, [self::WORKER_TASK_PROCESS, self::WORKER_TASK_BULK])) {
                         $need = false;
                     }
                 }

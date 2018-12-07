@@ -2,7 +2,7 @@
 
 namespace go1\util_index\core\consumer;
 
-use go1\core\lo\index\LearningObjectIndexServiceProvider;
+use go1\core\lo\index\MicroService as LoIndexService;
 use go1\util\DB;
 use go1\util\es\Schema;
 use go1\util\lo\LoHelper;
@@ -19,14 +19,14 @@ class LoShareConsumer extends LoConsumer
     public function aware(): array
     {
         return [
-            Queue::LO_UPDATE                                   => 'TODO: description',
-            Queue::LO_GROUP_CREATE                             => 'TODO: description',
-            Queue::LO_GROUP_DELETE                             => 'TODO: description',
-            Queue::CUSTOM_TAG_PUSH                             => 'TODO: description',
-            Queue::CUSTOM_TAG_CREATE                           => 'TODO: description',
-            Queue::CUSTOM_TAG_DELETE                           => 'TODO: description',
-            LearningObjectIndexServiceProvider::INDEX_SHARE_LO => 'TODO: description',
-            LearningObjectIndexServiceProvider::BULK_LO_SHARE  => 'TODO: description',
+            Queue::LO_UPDATE             => 'TODO: description',
+            Queue::LO_GROUP_CREATE       => 'TODO: description',
+            Queue::LO_GROUP_DELETE       => 'TODO: description',
+            Queue::CUSTOM_TAG_PUSH       => 'TODO: description',
+            Queue::CUSTOM_TAG_CREATE     => 'TODO: description',
+            Queue::CUSTOM_TAG_DELETE     => 'TODO: description',
+            LoIndexService::INDEX_SHARE_LO => 'TODO: description',
+            LoIndexService::BULK_LO_SHARE  => 'TODO: description',
         ];
     }
 
@@ -45,7 +45,7 @@ class LoShareConsumer extends LoConsumer
                                 'offset'      => $offset,
                                 'loIds'       => $loIds,
                             ],
-                            LearningObjectIndexServiceProvider::INDEX_SHARE_LO
+                            LoIndexService::INDEX_SHARE_LO
                         );
                     }
                 }
@@ -65,11 +65,11 @@ class LoShareConsumer extends LoConsumer
                 $this->onTagUpdate($lo, $routingKey);
                 break;
 
-            case LearningObjectIndexServiceProvider::INDEX_SHARE_LO:
+            case LoIndexService::INDEX_SHARE_LO:
                 $this->onIndexShare($lo);
                 break;
 
-            case LearningObjectIndexServiceProvider::BULK_LO_SHARE:
+            case LoIndexService::BULK_LO_SHARE:
                 $this->onBulk($lo->los, $lo->indexName);
                 break;
         }
@@ -157,7 +157,6 @@ class LoShareConsumer extends LoConsumer
         }
 
         switch ($data->originalKey) {
-
             case Queue::LO_CREATE:
                 $this->create($lo, $portalIds);
                 break;
