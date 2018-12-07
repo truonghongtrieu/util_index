@@ -2,8 +2,8 @@
 
 namespace go1\util_index\core;
 
+use go1\core\learning_record\enrolment\index\consumer\EnrolmentAssessorConsumer;
 use go1\util\location\LocationRepository;
-use go1\util_index\core\consumer\EnrolmentAssessorConsumer;
 use go1\util_index\core\consumer\EnrolmentConsumer;
 use go1\util_index\core\consumer\EnrolmentVirtualFromPlanConsumer;
 use go1\util_index\core\consumer\LoConsumer;
@@ -129,15 +129,6 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['formatter.eck_data'],
                 $c['waitForCompletion'],
                 $c['repository.es']
-            );
-        };
-
-        $c['consumer.assessor'] = function (Container $c) {
-            return new EnrolmentAssessorConsumer(
-                $c['go1.client.es'],
-                $c['dbs']['go1_write'],
-                $c['formatter.enrolment'],
-                $c['go1.client.mq']
             );
         };
 
