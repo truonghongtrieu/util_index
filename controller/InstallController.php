@@ -6,7 +6,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Schema;
 use Elasticsearch\Client;
 use go1\clients\MqClient;
-use go1\internal\index\deprecated\DeprecatedInternalServiceProvider;
+use go1\internal\index\MicroService as InternalIndexService;
 use go1\util\DB;
 use go1\util\es\Schema as Index;
 use go1\util\portal\PortalStatuses;
@@ -50,13 +50,9 @@ class InstallController
             ->execute();
 
         while ($portalId = $q->fetchColumn()) {
-            $this->queue->queue(['portalId' => $portalId], DeprecatedInternalServiceProvider::INDEX_INSTALL_PORTAL);
+            $this->queue->queue(['portalId' => $portalId], InternalIndexService::INDEX_INSTALL_PORTAL);
         }
 
-        return DB::install($this->db, [
-            function (Schema $schema) {
-                IndexSchema::install($schema);
-            },
-        ]);
+        return DB::install($this->db, [function (Schema $schema) { IndexSchema::install($schema); }]);
     }
 }
