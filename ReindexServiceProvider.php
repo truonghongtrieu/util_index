@@ -2,7 +2,6 @@
 
 namespace go1\util_index;
 
-use go1\core\learning_record\enrolment\index\reindex\PlanReindex;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
@@ -21,10 +20,6 @@ class ReindexServiceProvider implements ServiceProviderInterface
                 $c['go1.client.es'],
                 $c
             );
-        };
-
-        $c['reindex.handler.plan'] = function (Container $c) {
-            return new PlanReindex($c['dbs']['go1'], $c['consumer.plan'], $c['consumer.plan.enrolment-virtual']);
         };
     }
 }
