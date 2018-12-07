@@ -6,7 +6,7 @@ use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use Exception;
-use go1\core\learning_record\enrolment\index\EnrolmentIndexServiceProvider;
+use go1\core\learning_record\enrolment\index\Microservice;
 use go1\util\award\AwardHelper;
 use go1\util\DateTime;
 use go1\util\edge\EdgeTypes;
@@ -113,7 +113,7 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
                     }
                     break;
 
-                case EnrolmentIndexServiceProvider::BULK_PLAN:
+                case Microservice::BULK_PLAN:
                     $this->onBulk($plan->plans, $plan->indexName);
                     break;
             }

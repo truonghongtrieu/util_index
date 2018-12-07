@@ -6,7 +6,7 @@ use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use Exception;
-use go1\core\learning_record\enrolment\index\EnrolmentIndexServiceProvider;
+use go1\core\learning_record\enrolment\index\Microservice;
 use go1\util\contract\ServiceConsumerInterface;
 use go1\util\enrolment\EnrolmentHelper;
 use go1\util\enrolment\EnrolmentTypes;
@@ -157,7 +157,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
                 $this->onQuizUserAnswerUpdate($enrolment);
                 break;
 
-            case EnrolmentIndexServiceProvider::BULK_ENROLMENT:
+            case Microservice::BULK_ENROLMENT:
                 $this->onBulk($enrolment->enrolments, $enrolment->indexName, $enrolment->marketplace ?? false);
                 break;
         }
