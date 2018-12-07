@@ -15,8 +15,8 @@ class IndexService extends GO1
     const VERSION             = Service::VERSION;
 
     // routingKeys
-    const WORKER_TASK_PROCESS = TASK_PROCESS_ROUTING_KEY;
-    const WORKER_TASK_BULK    = TASK_BULK_ROUTING_KEY;
+    const WORKER_TASK_PROCESS = REINDEX_TASK_PROCESS;
+    const WORKER_TASK_BULK    = REINDEX_TASK_BULK;
     const REINDEX_START       = REINDEX_ROUTING_KEY;
     const REINDEX_CLEANUP     = REINDEX_CLEANUP;
 
