@@ -355,9 +355,11 @@ class LoFormatter
                 return LoHelper::countChild($this->go1, $lo->id);
 
             case LiTypes::QUIZ:
-                $quiz = QuizHelper::load($this->quiz, $lo->remote_id);
-
-                return $quiz ? QuizHelper::questionCount($this->quiz, $quiz) : null;
+                if ($this->quiz) {
+                    $quiz = QuizHelper::load($this->quiz, $lo->remote_id);
+                    return $quiz ? QuizHelper::questionCount($this->quiz, $quiz) : null;
+                }
+                return null;
 
             case LoTypes::AWARD:
                 return $lo->quantity ?? null;
