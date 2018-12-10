@@ -77,7 +77,8 @@ class ElasticSearchRepository
 
         if (!empty($response['errors'])) {
             if ($this->throwBulkException) {
-                $err = 'has error on bulk request: ' . print_r($response, true);
+                $err = 'has error on bulk request: ';
+                $err .= print_r(['request' => $params, 'response' => $response], true);
                 throw new RuntimeException($err);
             }
         }
