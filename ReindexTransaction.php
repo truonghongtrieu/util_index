@@ -156,10 +156,8 @@ class ReindexTransaction
         }
 
         for ($offset = 0; $offset < $total; $offset += $this->limit) {
-            $this->queue->queue(
-                ['name' => $this->currentHandler, 'id' => $this->id, 'offset' => $offset],
-                ReindexServiceProvider::WORKER_REINDEX
-            );
+            $payload = ['name' => $this->currentHandler, 'id' => $this->id, 'offset' => $offset];
+            $this->queue->publish($payload, IndexService::REINDEX_START);
         }
     }
 }
