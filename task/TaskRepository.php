@@ -258,7 +258,7 @@ class TaskRepository
         }
 
         $this->update($task);
-        $this->queue->queue($items, IndexService::WORKER_TASK_BULK, ['id' => $task->id]);
+        $this->queue->publish($items, IndexService::WORKER_TASK_BULK, ['id' => $task->id]);
     }
 
     private function calculatePercent(Task $task)
