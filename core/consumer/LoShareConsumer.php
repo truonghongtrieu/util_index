@@ -19,12 +19,12 @@ class LoShareConsumer extends LoConsumer
     public function aware(): array
     {
         return [
-            Queue::LO_UPDATE             => 'TODO: description',
-            Queue::LO_GROUP_CREATE       => 'TODO: description',
-            Queue::LO_GROUP_DELETE       => 'TODO: description',
-            Queue::CUSTOM_TAG_PUSH       => 'TODO: description',
-            Queue::CUSTOM_TAG_CREATE     => 'TODO: description',
-            Queue::CUSTOM_TAG_DELETE     => 'TODO: description',
+            Queue::LO_UPDATE               => 'TODO: description',
+            Queue::LO_GROUP_CREATE         => 'TODO: description',
+            Queue::LO_GROUP_DELETE         => 'TODO: description',
+            Queue::CUSTOM_TAG_PUSH         => 'TODO: description',
+            Queue::CUSTOM_TAG_CREATE       => 'TODO: description',
+            Queue::CUSTOM_TAG_DELETE       => 'TODO: description',
             LoIndexService::INDEX_SHARE_LO => 'TODO: description',
             LoIndexService::BULK_LO_SHARE  => 'TODO: description',
         ];
@@ -38,14 +38,15 @@ class LoShareConsumer extends LoConsumer
                 $numOfPortal = $loIds ? $this->numOfPortal($loIds) : 0;
                 if ($numOfPortal > 0) {
                     for ($offset = 0; $offset < $numOfPortal; $offset += static::$limit) {
-                        $this->queue->queue(
+                        $this->queue->publish(
                             [
                                 'originalKey' => $routingKey,
                                 'lo'          => $lo,
                                 'offset'      => $offset,
                                 'loIds'       => $loIds,
                             ],
-                            LoIndexService::INDEX_SHARE_LO
+                            LoIndexService::INDEX_SHARE_LO,
+                            json_decode(json_encode($context), true) ?? []
                         );
                     }
                 }
