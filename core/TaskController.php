@@ -92,16 +92,6 @@ class TaskController
                   ->that($removeRedundant, 'remove_redundant')->nullOr()->inArray([0, 1, true, false, '0', '1', 'true', 'false'])
                   ->verifyNow();
 
-            # Forward the reindex action to microsevices
-            # ---------------------
-            if (!empty($services)) {
-                foreach ($services as $service) {
-                    $url = Service::url($service, $this->env);
-                    $url .= !isset($portal->id) ? "/reindex?jwt=" . UserHelper::ROOT_JWT : "/reindex?jwt=" . UserHelper::ROOT_JWT . "&portalId={$portal->id}";
-                    $this->http->post($url);
-                }
-            }
-
             $handlers = $handlers ?: $defaultHandlers;
             if ($handlers) {
                 $task = Task::create((object) [
