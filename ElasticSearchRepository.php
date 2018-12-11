@@ -3,9 +3,9 @@
 namespace go1\util_index;
 
 use Elasticsearch\Client;
+use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use go1\clients\MqClient;
 use go1\util\es\Schema;
-use RuntimeException;
 
 class ElasticSearchRepository
 {
@@ -79,7 +79,7 @@ class ElasticSearchRepository
             if ($this->throwBulkException) {
                 $err = 'has error on bulk request: ';
                 $err .= print_r(['request' => $params, 'response' => $response], true);
-                throw new RuntimeException($err);
+                throw new ElasticSearchBulkRequestError($err, $response);
             }
         }
 
@@ -88,12 +88,36 @@ class ElasticSearchRepository
 
     public function create(array $data, array $indices)
     {
-        return $this->bulk($data, $indices);
+        try {
+            return (1 < count($indices))
+                ? $this->bulk($data, $indices)
+                : $this->client->create(array_filter([
+                    'index'  => $index = $indices[0],
+                    'type'   => $data['type'],
+                    'id'     => $data['id'],
+                    'parent' => $data['parent_indices'][$index] ?? $data['parent'] ?? null,
+                    'body'   => $data['body'],
+                ]));
+        } catch (ElasticsearchException $e) {
+            $this->history->write($data['type'], $data['id'], $e->getCode(), $e->getMessage());
+        }
     }
 
     public function update(array $data, array $indices)
     {
-        return $this->bulk($data, $indices, Schema::DO_UPDATE);
+        try {
+            return (1 < count($indices))
+                ? $this->bulk($data, $indices, Schema::DO_UPDATE)
+                : $this->client->update(array_filter([
+                    'index'  => $index = $indices[0],
+                    'type'   => $data['type'],
+                    'id'     => $data['id'],
+                    'parent' => $data['parent_indices'][$index] ?? $data['parent'] ?? null,
+                    'body'   => ['doc' => $data['body']],
+                ]));
+        } catch (ElasticsearchException $e) {
+            $this->history->write($data['type'], $data['id'], $e->getCode(), $e->getMessage());
+        }
     }
 
     public function delete(array $data, array $indices)
