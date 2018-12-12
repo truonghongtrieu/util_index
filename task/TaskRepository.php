@@ -224,7 +224,6 @@ class TaskRepository
         }
 
         $task->currentOffset = 0;
-        $task->currentOffset = 0;
         $task->currentIdFromOffset = 0;
         $task->percent = $this->calculatePercent($task);
         $this->update($task);
@@ -237,32 +236,32 @@ class TaskRepository
     private function generateItems(Task $task)
     {
         $handler = $this->getHandler($task->currentHandler);
-        for ($i = 0; $i < $task->maxNumItems; ++$i) {
-            if ($task->currentOffset < $task->stats[$task->currentHandler]) {
-                $idFromOffset = 0;
-                if ($task->currentOffset > 0) {
-                    $idFromOffset = method_exists($handler, 'offsetToId')
-                        ? $handler->offsetToId($task, $task->currentIdFromOffset)
-                        : 0;
-                }
-
-                $this->queue->publish(
-                    [
-                        'handler'             => $task->currentHandler,
-                        'id'                  => $task->id,
-                        'currentOffset'       => $task->currentOffset,
-                        'currentIdFromOffset' => $idFromOffset,
-                    ],
-                    IndexService::WORKER_TASK_PROCESS,
-                    ['id' => $task->id]
-                );
-
-                $task->currentIdFromOffset = $idFromOffset;
+        for ($i = $task->currentOffset; $i < $task->stats[$task->currentHandler]; $i++) {
+            $idFromOffset = 0;
+            if ($task->currentOffset > 0) {
+                $idFromOffset = method_exists($handler, 'offsetToId')
+                    ? $handler->offsetToId($task, $task->currentIdFromOffset)
+                    : 0;
             }
 
-            ++$task->currentOffset;
+            $payload = [
+                'handler'             => $task->currentHandler,
+                'id'                  => $task->id,
+                'currentOffset'       => $i,
+                'currentIdFromOffset' => $idFromOffset,
+                'isLast'              => ($i + 1 == $task->stats[$task->currentHandler])
+            ];
+
+            $this->queue->publish(
+                $payload,
+                IndexService::WORKER_TASK_PROCESS,
+                ['id' => $task->id]
+            );
+
+            $task->currentIdFromOffset = $idFromOffset;
         }
 
+        $task->currentOffset = $task->stats[$task->currentHandler];
         $this->update($task);
     }
 
