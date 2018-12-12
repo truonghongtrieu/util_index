@@ -34,7 +34,7 @@ class TaskConsumer implements ServiceConsumerInterface
             if ($task = $this->repository->load($payload->id)) {
                 try {
                     $this->process($payload, $task);
-                    $this->repository->verify($task, false);
+                    $this->repository->verify($task, !empty($payload->isLast));
                 } catch (Exception $e) {
                     $this->history->write('task_process', $task->id, 500, ['message' => $e->getMessage(), 'data' => $payload]);
                 }
@@ -52,7 +52,6 @@ class TaskConsumer implements ServiceConsumerInterface
         $task->offset = $payload->currentOffset ?? 0;
         $task->offset = $task->offset * $limit;
         $task->offsetId = $payload->currentIdFromOffset ?? 0;
-        $task->currentOffset = $payload->offset ?? 0;
         $task->currentIdFromOffset = $payload->currentIdFromOffset ?? 0;
         $task->limit = $limit;
         $handler->handle($task);
