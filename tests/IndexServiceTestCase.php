@@ -136,28 +136,10 @@ abstract class IndexServiceTestCase extends TestCase
                 ->method('queue')
                 ->willReturnCallback(
                     function ($body, $routingKey, $context) use ($app) {
-                        if (IndexService::WORKER_TASK_BULK == $routingKey) {
-                            foreach ($body as $msg) {
-                                $req = Request::create('/consume?jwt=' . UserHelper::ROOT_JWT, 'POST');
-                                $req->request->replace(['routingKey' => $msg['routingKey'], 'body' => (object) $msg['body']]);
-                                $res = $app->handle($req);
-                                $this->assertEquals(204, $res->getStatusCode());
-                            }
-
-                            $req = Request::create('/consume?jwt=' . UserHelper::ROOT_JWT, 'POST', [
-                                'routingKey' => $routingKey,
-                                'body'       => (object) [],
-                                'context'    => $context,
-                            ]);
-                            $res = $app->handle($req);
-                            $this->assertEquals(204, $res->getStatusCode());
-
-                            return true;
-                        }
-
                         $req = Request::create('/consume?jwt=' . UserHelper::ROOT_JWT, 'POST', [
                             'routingKey' => $routingKey,
                             'body'       => (object) $body,
+                            'context'    => $context,
                         ]);
                         $res = $app->handle($req);
                         $this->assertEquals(204, $res->getStatusCode());

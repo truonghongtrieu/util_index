@@ -50,7 +50,7 @@ class InstallController
             ->execute();
 
         while ($portalId = $q->fetchColumn()) {
-            $this->queue->queue(['portalId' => $portalId], InternalIndexService::INDEX_INSTALL_PORTAL);
+            $this->queue->publish(['portalId' => $portalId], InternalIndexService::INDEX_INSTALL_PORTAL);
         }
 
         return DB::install($this->db, [function (Schema $schema) { IndexSchema::install($schema); }]);
