@@ -11,12 +11,11 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class IndexService extends GO1
 {
-    const NAME                = SERVICE_NAME;
-    const VERSION             = Service::VERSION;
+    const NAME    = SERVICE_NAME;
+    const VERSION = Service::VERSION;
 
     // routingKeys
     const WORKER_TASK_PROCESS = REINDEX_TASK_PROCESS;
-    const WORKER_TASK_BULK    = REINDEX_TASK_BULK;
     const REINDEX_START       = REINDEX_ROUTING_KEY;
     const REINDEX_CLEANUP     = REINDEX_CLEANUP;
 
@@ -51,7 +50,7 @@ class IndexService extends GO1
                 $data = $input ? json_decode($input, true) : [];
                 $routingKey = $data['routingKey'] ?? '';
                 if (is_string($routingKey)) {
-                    if (in_array($routingKey, [self::WORKER_TASK_PROCESS, self::WORKER_TASK_BULK])) {
+                    if (in_array($routingKey, [self::WORKER_TASK_PROCESS])) {
                         $need = false;
                     }
                 }
