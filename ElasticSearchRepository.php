@@ -88,36 +88,12 @@ class ElasticSearchRepository
 
     public function create(array $data, array $indices)
     {
-        try {
-            return (1 < count($indices))
-                ? $this->bulk($data, $indices)
-                : $this->client->create(array_filter([
-                    'index'  => $index = $indices[0],
-                    'type'   => $data['type'],
-                    'id'     => $data['id'],
-                    'parent' => $data['parent_indices'][$index] ?? $data['parent'] ?? null,
-                    'body'   => $data['body'],
-                ]));
-        } catch (ElasticsearchException $e) {
-            $this->history->write($data['type'], $data['id'], $e->getCode(), $e->getMessage());
-        }
+        $this->bulk($data, $indices);
     }
 
     public function update(array $data, array $indices)
     {
-        try {
-            return (1 < count($indices))
-                ? $this->bulk($data, $indices, Schema::DO_UPDATE)
-                : $this->client->update(array_filter([
-                    'index'  => $index = $indices[0],
-                    'type'   => $data['type'],
-                    'id'     => $data['id'],
-                    'parent' => $data['parent_indices'][$index] ?? $data['parent'] ?? null,
-                    'body'   => ['doc' => $data['body']],
-                ]));
-        } catch (ElasticsearchException $e) {
-            $this->history->write($data['type'], $data['id'], $e->getCode(), $e->getMessage());
-        }
+        $this->bulk($data, $indices, Schema::DO_UPDATE);
     }
 
     public function delete(array $data, array $indices)
