@@ -4,6 +4,7 @@ namespace go1\util_index\tests;
 
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\Schema as DBSchema;
+use go1\app\DomainService;
 use go1\clients\MqClient;
 use go1\util\DB;
 use go1\util\es\mock\EsInstallTrait;
@@ -13,6 +14,7 @@ use go1\util_index\HistoryRepository;
 use go1\util_index\IndexSchema;
 use go1\util_index\IndexService;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 
 abstract class IndexServiceTestCase extends TestCase
@@ -36,14 +38,21 @@ abstract class IndexServiceTestCase extends TestCase
         ];
     }
 
-    protected function getApp(): IndexService
+    private function publicDir()
+    {
+        $r = new ReflectionClass(DomainService::class);
+
+        return dirname($r->getFileName()) . '/public';
+    }
+
+    protected function getApp(): DomainService
     {
         if (!getenv('ES_URL')) {
             putenv('ES_URL=http://localhost:9200');
         }
 
         /** @var IndexService $app */
-        $app = require __DIR__ . '/../public/index.php';
+        $app = require $this->publicDir() . '/index.php';
         $app['waitForCompletion'] = true;
         $app['dbs'] = $app->extend('dbs', function () { return $this->getDatabases(); });
 
@@ -99,10 +108,14 @@ abstract class IndexServiceTestCase extends TestCase
         return $app;
     }
 
-    protected function mockMqClient(IndexService $app)
+    protected function mockMqClient(DomainService $app)
     {
         $app->extend('go1.client.mq', function () {
-            $queue = $this->getMockBuilder(MqClient::class)->disableOriginalConstructor()->setMethods(['queue', 'publish'])->getMock();
+            $queue = $this
+                ->getMockBuilder(MqClient::class)
+                ->disableOriginalConstructor()
+                ->setMethods(['queue', 'publish'])
+                ->getMock();
 
             $queue
                 ->expects($this->any())
@@ -122,7 +135,7 @@ abstract class IndexServiceTestCase extends TestCase
         });
     }
 
-    protected function mockMqClientToDoConsume(IndexService $app)
+    protected function mockMqClientToDoConsume(DomainService $app)
     {
         $app->extend('go1.client.mq', function () use ($app) {
             $mock = $this
@@ -152,7 +165,7 @@ abstract class IndexServiceTestCase extends TestCase
         });
     }
 
-    protected function appInstall(IndexService $app)
+    protected function appInstall(DomainService $app)
     {
         $this->installGo1Schema($app['dbs']['go1'], $coreOnly = false);
         DB::install($app['dbs']['go1'], [function (DBSchema $schema) { IndexSchema::install($schema); }]);

@@ -3,7 +3,6 @@
 namespace go1\util_index;
 
 use Elasticsearch\Client;
-use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use go1\clients\MqClient;
 use go1\util\es\Schema;
 

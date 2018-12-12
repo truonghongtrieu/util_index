@@ -6,8 +6,8 @@ use Doctrine\DBAL\Connection;
 use Elasticsearch\Client;
 use Elasticsearch\Common\Exceptions\Missing404Exception;
 use Exception;
+use go1\app\DomainService;
 use go1\util\es\Schema;
-use go1\util_index\IndexService;
 use go1\util_index\task\TaskRepository;
 use PHPUnit\Framework\TestCase;
 
@@ -37,17 +37,17 @@ trait IndexServiceTestHelperTrait
         return $this;
     }
 
-    protected function client(IndexService $app): Client
+    protected function client(DomainService $app): Client
     {
         return $app['go1.client.es'];
     }
 
-    protected function db(IndexService $app): Connection
+    protected function db(DomainService $app): Connection
     {
         return $app['dbs']['default'];
     }
 
-    protected function taskRepository(IndexService $app): TaskRepository
+    protected function taskRepository(DomainService $app): TaskRepository
     {
         return $app['task.repository'];
     }
