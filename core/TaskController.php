@@ -105,7 +105,7 @@ class TaskController
                         'alias'           => $alias,
                         'aliasName'       => $aliasName,
                         'routing'         => $routing,
-                        'maxNumItems'     => $maxNumItems ?: 20,
+                        'maxNumItems'     => $maxNumItems ?: 100,
                         'removeRedundant' => $removeRedundant,
                     ],
                 ]);

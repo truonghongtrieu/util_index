@@ -195,13 +195,15 @@ class TaskRepository
         $this->verify($task);
     }
 
-    public function verify(Task $task)
+    public function verify(Task $task, bool $generate = true)
     {
         # ---------------------
         # generate unit-of-works
         # ---------------------
         if (!$task->currentHandlerIsCompleted()) {
-            $this->generateItems($task);
+            if ($generate) {
+                $this->generateItems($task);
+            }
 
             return null;
         }
@@ -226,13 +228,15 @@ class TaskRepository
         $task->currentIdFromOffset = 0;
         $task->percent = $this->calculatePercent($task);
         $this->update($task);
-        $this->generateItems($task);
+
+        if ($generate) {
+            $this->generateItems($task);
+        }
     }
 
     private function generateItems(Task $task)
     {
         $handler = $this->getHandler($task->currentHandler);
-        $items = [];
         for ($i = 0; $i < $task->maxNumItems; ++$i) {
             if ($task->currentOffset < $task->stats[$task->currentHandler]) {
                 $idFromOffset = 0;
@@ -242,15 +246,17 @@ class TaskRepository
                         : 0;
                 }
 
-                $items[] = [
-                    'routingKey' => IndexService::WORKER_TASK_PROCESS,
-                    'body'       => $body = [
+                $this->queue->publish(
+                    [
                         'handler'             => $task->currentHandler,
                         'id'                  => $task->id,
                         'currentOffset'       => $task->currentOffset,
                         'currentIdFromOffset' => $idFromOffset,
                     ],
-                ];
+                    IndexService::WORKER_TASK_PROCESS,
+                    ['id' => $task->id]
+                );
+
                 $task->currentIdFromOffset = $idFromOffset;
             }
 
@@ -258,7 +264,6 @@ class TaskRepository
         }
 
         $this->update($task);
-        $this->queue->publish($items, IndexService::WORKER_TASK_BULK, ['id' => $task->id]);
     }
 
     private function calculatePercent(Task $task)

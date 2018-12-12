@@ -6,6 +6,7 @@ use Exception;
 use go1\util\contract\ServiceConsumerInterface;
 use go1\util_index\HistoryRepository;
 use go1\util_index\IndexService;
+use go1\util_index\task\Task;
 use go1\util_index\task\TaskRepository;
 use stdClass;
 
@@ -24,55 +25,36 @@ class TaskConsumer implements ServiceConsumerInterface
     {
         return [
             IndexService::WORKER_TASK_PROCESS => 'Process reindexing task',
-            IndexService::WORKER_TASK_BULK    => 'Process bulk reindexing task',
         ];
     }
 
-    public function consume(string $routingKey, stdClass $data, stdClass $context = null)
+    public function consume(string $routingKey, stdClass $payload, stdClass $context = null)
     {
-        switch ($routingKey) {
-            case IndexService::WORKER_TASK_PROCESS:
-                $this->process($data);
-                break;
-
-            case IndexService::WORKER_TASK_BULK:
-                $this->onBulkComplete($data, $context);
-                break;
-        }
-    }
-
-    private function process(stdClass &$data)
-    {
-        if ($task = $this->repository->load($data->id)) {
-            try {
-                $handler = $this->repository->getHandler($task->currentHandler);
-                if ($handler) {
-                    $limit = isset($handler::$limit) ? $handler::$limit : $task->limit;
-
-                    $task->offset = $data->currentOffset ?? 0;
-                    $task->offset = $task->offset * $limit;
-                    $task->offsetId = $data->currentIdFromOffset ?? 0;
-
-                    $task->currentOffset = $data->offset ?? 0;
-                    $task->currentIdFromOffset = $data->currentIdFromOffset ?? 0;
-                    $task->limit = $limit;
-                    $handler->handle($task);
+        if (IndexService::WORKER_TASK_PROCESS === $routingKey) {
+            if ($task = $this->repository->load($payload->id)) {
+                try {
+                    $this->process($payload, $task);
+                    $this->repository->verify($task, false);
+                } catch (Exception $e) {
+                    $this->history->write('task_process', $task->id, 500, ['message' => $e->getMessage(), 'data' => $payload]);
                 }
-            } catch (Exception $e) {
-                $this->history->write('task_process', $task->id, 500, ['message' => $e->getMessage(), 'data' => $data]);
             }
         }
     }
 
-    private function onBulkComplete(stdClass &$data, stdClass $context)
+    private function process(stdClass &$payload, Task $task)
     {
-        if ($task = $this->repository->load($context->id)) {
-            try {
-                $task->failureItems += $data->failures ?? 0;
-                $this->repository->verify($task);
-            } catch (Exception $e) {
-                $this->history->write('task_process', $task->id, 500, ['message' => $e->getMessage(), 'data' => $data]);
-            }
+        if (!$handler = $this->repository->getHandler($task->currentHandler)) {
+            return;
         }
+
+        $limit = isset($handler::$limit) ? $handler::$limit : $task->limit;
+        $task->offset = $payload->currentOffset ?? 0;
+        $task->offset = $task->offset * $limit;
+        $task->offsetId = $payload->currentIdFromOffset ?? 0;
+        $task->currentOffset = $payload->offset ?? 0;
+        $task->currentIdFromOffset = $payload->currentIdFromOffset ?? 0;
+        $task->limit = $limit;
+        $handler->handle($task);
     }
 }
