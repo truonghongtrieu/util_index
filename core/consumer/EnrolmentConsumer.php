@@ -79,19 +79,19 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     public function aware(): array
     {
         return [
-            Queue::ENROLMENT_CREATE        => 'Create an enrolment. Delete plan assigned if exist',
-            Queue::ENROLMENT_UPDATE        => 'Update an enrolment',
-            Queue::ENROLMENT_DELETE        => 'Delete an enrolment',
-            Queue::LO_UPDATE               => 'Update lo and parent lo on an enrolment. Update enrolment status of a lo',
-            Queue::USER_UPDATE             => 'Update account and assessor on an enrolment',
-            Queue::USER_DELETE             => 'Delete account on an enrolment',
-            Queue::GROUP_ITEM_CREATE       => "Update account's groups on an enrolment",
-            Queue::GROUP_ITEM_DELETE       => "Update account's groups on an enrolment",
-            Queue::ECK_CREATE              => "Update account's custom fields on an enrolment",
-            Queue::ECK_UPDATE              => "Update account's custom fields on an enrolment",
-            Queue::ECK_DELETE              => "Delete account's custom fields on an enrolment",
-            Queue::QUIZ_USER_ANSWER_CREATE => 'Update an enrolment that is related to quiz answer',
-            Queue::QUIZ_USER_ANSWER_UPDATE => 'Update an enrolment that is related to quiz answer',
+            Queue::ENROLMENT_CREATE        => 'Create an enrolment document in ES. Delete plan assigned if exist',
+            Queue::ENROLMENT_UPDATE        => 'Update an enrolment document in ES',
+            Queue::ENROLMENT_DELETE        => 'Delete an enrolment document in ES',
+            Queue::LO_UPDATE               => 'Update lo and parent lo on an enrolment document in ES. Update enrolment status of that lo',
+            Queue::USER_UPDATE             => 'Update account and assessor on an enrolment document in ES',
+            Queue::USER_DELETE             => 'Delete account on an enrolment document in ES',
+            Queue::GROUP_ITEM_CREATE       => "Update account's groups on an enrolment document in ES",
+            Queue::GROUP_ITEM_DELETE       => "Update account's groups on an enrolment document in ES",
+            Queue::ECK_CREATE              => "Update account's custom fields on an enrolment document in ES",
+            Queue::ECK_UPDATE              => "Update account's custom fields on an enrolment document in ES",
+            Queue::ECK_DELETE              => "Delete account's custom fields on an enrolment document in ES",
+            Queue::QUIZ_USER_ANSWER_CREATE => 'Update an enrolment document in ES that is related to the quiz answer',
+            Queue::QUIZ_USER_ANSWER_UPDATE => 'Update an enrolment document in ES that is related to the quiz answer',
         ];
     }
 
