@@ -79,19 +79,19 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     public function aware(): array
     {
         return [
-            Queue::ENROLMENT_CREATE        => 'TODO: description',
-            Queue::ENROLMENT_UPDATE        => 'TODO: description',
-            Queue::ENROLMENT_DELETE        => 'TODO: description',
-            Queue::LO_UPDATE               => 'TODO: description',
-            Queue::USER_UPDATE             => 'TODO: description',
-            Queue::USER_DELETE             => 'TODO: description',
-            Queue::GROUP_ITEM_CREATE       => 'TODO: description',
-            Queue::GROUP_ITEM_DELETE       => 'TODO: description',
-            Queue::ECK_CREATE              => 'TODO: description',
-            Queue::ECK_UPDATE              => 'TODO: description',
-            Queue::ECK_DELETE              => 'TODO: description',
-            Queue::QUIZ_USER_ANSWER_CREATE => 'TODO: description',
-            Queue::QUIZ_USER_ANSWER_UPDATE => 'TODO: description',
+            Queue::ENROLMENT_CREATE        => 'Create an enrolment. Delete plan assigned if exist',
+            Queue::ENROLMENT_UPDATE        => 'Update an enrolment',
+            Queue::ENROLMENT_DELETE        => 'Delete an enrolment',
+            Queue::LO_UPDATE               => 'Update lo and parent lo on an enrolment. Update enrolment status of a lo',
+            Queue::USER_UPDATE             => 'Update account and assessor on an enrolment',
+            Queue::USER_DELETE             => 'Delete account on an enrolment',
+            Queue::GROUP_ITEM_CREATE       => "Update account's groups on an enrolment",
+            Queue::GROUP_ITEM_DELETE       => "Update account's groups on an enrolment",
+            Queue::ECK_CREATE              => "Update account's custom fields on an enrolment",
+            Queue::ECK_UPDATE              => "Update account's custom fields on an enrolment",
+            Queue::ECK_DELETE              => "Delete account's custom fields on an enrolment",
+            Queue::QUIZ_USER_ANSWER_CREATE => 'Update an enrolment that is related to quiz answer',
+            Queue::QUIZ_USER_ANSWER_UPDATE => 'Update an enrolment that is related to quiz answer',
         ];
     }
 
