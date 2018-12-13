@@ -236,6 +236,7 @@ class TaskRepository
     private function generateItems(Task $task)
     {
         $handler = $this->getHandler($task->currentHandler);
+        $packages = [];
         for ($i = $task->currentOffset; $i < $task->stats[$task->currentHandler]; $i++) {
             $idFromOffset = 0;
             if ($task->currentOffset > 0) {
@@ -252,17 +253,21 @@ class TaskRepository
                 'isLast'              => ($i + 1 == $task->stats[$task->currentHandler])
             ];
 
-            $this->queue->publish(
+            $packages[] = [
                 $payload,
                 IndexService::WORKER_TASK_PROCESS,
-                ['id' => $task->id]
-            );
+                ['id' => $task->id],
+            ];
 
             $task->currentIdFromOffset = $idFromOffset;
         }
 
         $task->currentOffset = $task->stats[$task->currentHandler];
         $this->update($task);
+
+        foreach ($packages as $package) {
+            $this->queue->publish($package[0], $package[1], $package[2]);
+        }
     }
 
     private function calculatePercent(Task $task)
