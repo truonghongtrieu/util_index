@@ -167,7 +167,7 @@ abstract class IndexServiceTestCase extends TestCase
 
     protected function appInstall(DomainService $app)
     {
-        $this->installGo1Schema($app['dbs']['go1'], $coreOnly = false);
+        $this->installGo1Schema($app['dbs']['go1'], $coreOnly = false, $app['accounts_name']);
         DB::install($app['dbs']['go1'], [function (DBSchema $schema) { IndexSchema::install($schema); }]);
 
         if (!$this->isUnitTestCase) {
