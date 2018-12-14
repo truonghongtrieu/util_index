@@ -211,7 +211,7 @@ class TaskRepository
         # ---------------------
         # move to next handler; complete if nothing found.
         # ---------------------
-        $task->processedItems += $task->stats[$task->currentHandler];
+        $task->processedItems += $task->stats[$task->currentHandler] ?? 0;
         $task->currentHandler = $task->nextHandler();
         while ($task->currentHandler && (0 == $task->stats[$task->currentHandler])) {
             $task->currentHandler = $task->nextHandler();
