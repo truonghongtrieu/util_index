@@ -93,7 +93,7 @@ class Task implements JsonSerializable
 
     public function currentHandlerIsCompleted(): bool
     {
-        if (0 == $this->stats[$this->currentHandler]) {
+        if (0 == ($this->stats[$this->currentHandler] ?? 0)) {
             return true;
         }
 
