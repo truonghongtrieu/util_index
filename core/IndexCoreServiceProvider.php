@@ -68,6 +68,7 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['dbs']['go1'],
                 $c['dbs']['assignment'] ?? null,
                 $c['dbs']['quiz'] ?? null,
+                $c['dbs']['group'] ?? null,
                 $c['accounts_name'],
                 $c['formatter.lo'],
                 $c['formatter.user']
