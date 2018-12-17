@@ -174,7 +174,10 @@ class TaskRepository
             $this->client->indices()->create(['index' => $task->index, 'body' => Schema::BODY + $settings]);
         }
 
-        if (!$this->client->indices()->exists(['index' => $task->aliasName])) {
+        if ($task->aliasName
+            && $task->aliasName != $task->index
+            && !$this->client->indices()->exists(['index' => $task->aliasName])
+        ) {
             $this->client->indices()->create(['index' => $task->aliasName, 'body' => Schema::BODY + $settings]);
         }
 
@@ -213,7 +216,7 @@ class TaskRepository
         # ---------------------
         $task->processedItems += $task->stats[$task->currentHandler] ?? 0;
         $task->currentHandler = $task->nextHandler();
-        while ($task->currentHandler && (0 == $task->stats[$task->currentHandler])) {
+        while ($task->currentHandler && (0 == $task->stats[$task->currentHandler] ?? 0)) {
             $task->currentHandler = $task->nextHandler();
         }
 
@@ -237,9 +240,14 @@ class TaskRepository
     {
         $handler = $this->getHandler($task->currentHandler);
         $packages = [];
-        for ($i = $task->currentOffset; $i < $task->stats[$task->currentHandler]; $i++) {
+        $numOfChunks = 100; // avoid to generate too many tasks once
+        $maxOffset = $task->stats[$task->currentHandler];
+        $offset = $task->currentOffset;
+        for ($i = 0; $i < $numOfChunks && $offset < $maxOffset; $i++) {
+            $offset = $task->currentOffset + $i;
+            $isLast = ($i == $numOfChunks - 1) || ($offset == $maxOffset - 1);
             $idFromOffset = 0;
-            if ($task->currentOffset > 0) {
+            if ($offset > 0) {
                 $idFromOffset = method_exists($handler, 'offsetToId')
                     ? $handler->offsetToId($task, $task->currentIdFromOffset)
                     : 0;
@@ -250,7 +258,7 @@ class TaskRepository
                 'id'                  => $task->id,
                 'currentOffset'       => $i,
                 'currentIdFromOffset' => $idFromOffset,
-                'isLast'              => ($i + 1 == $task->stats[$task->currentHandler])
+                'isLast'              => $isLast,
             ];
 
             $packages[] = [
@@ -262,7 +270,7 @@ class TaskRepository
             $task->currentIdFromOffset = $idFromOffset;
         }
 
-        $task->currentOffset = $task->stats[$task->currentHandler];
+        $task->currentOffset = $offset;
         $this->update($task);
 
         foreach ($packages as $package) {

@@ -81,9 +81,9 @@ class TaskController
 
         try {
             Assert::lazy()
-                  ->that($title, 'name')->string()->minLength(1)
+                  ->that($title, 'title')->string()->minLength(1)
                   ->that($index, 'index')->string()->minLength(1)
-                  ->that($routing, 'index')->string()->minLength(1)
+                  ->that($routing, 'routing')->string()->minLength(1)
                   ->that($handlers, 'handlers')->nullOr()->all()->inArray($defaultHandlers)
                   ->that($execute, 'execute')->nullOr()->inArray([0, 1, true, false, '0', '1', 'true', 'false'])
                   ->that($alias, 'alias')->nullOr()->inArray([0, 1, true, false, '0', '1', 'true', 'false'])
