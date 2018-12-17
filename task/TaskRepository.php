@@ -240,7 +240,7 @@ class TaskRepository
     {
         $handler = $this->getHandler($task->currentHandler);
         $packages = [];
-        $maxPages = 1000; // avoid to generate too many tasks once
+        $maxPages = 100; // avoid to generate too many tasks once
         $maxOffset = $task->stats[$task->currentHandler];
         $offset = $task->currentOffset;
         for ($i = 0; $i < $maxPages && $offset < $maxOffset; $i++) {
