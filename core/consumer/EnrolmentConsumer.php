@@ -170,15 +170,11 @@ class EnrolmentConsumer implements ServiceConsumerInterface
 
     private function onCreate(stdClass $enrolment, stdClass $lo, $indices = null)
     {
-        $parentIdByIndices = [Schema::portalIndex($enrolment->taken_instance_id) => $this->parentId($enrolment->lo_id, $enrolment->taken_instance_id)];
-
         try {
             $this->repository->create([
                 'type'           => Schema::O_ENROLMENT,
                 'id'             => $enrolment->id,
                 'body'           => $this->format($enrolment),
-                'parent'         => $enrolment->lo_id,
-                'parent_indices' => $parentIdByIndices,
             ], $indices ?? IndexHelper::enrolmentIndices($enrolment));
 
             $user = UserHelper::loadByProfileId($this->go1, $enrolment->profile_id, $this->accountsName);

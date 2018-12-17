@@ -103,6 +103,10 @@ abstract class IndexServiceTestCase extends TestCase
             ? $this->mockMqClientToDoConsume($app)
             : $this->mockMqClient($app);
 
+        $app->extend('go1.client.es_writer', function () use ($app) {
+            return $app['go1.client.es'];
+        });
+
         $this->appInstall($app);
 
         return $app;
@@ -170,7 +174,7 @@ abstract class IndexServiceTestCase extends TestCase
         $this->installGo1Schema($app['dbs']['go1'], $coreOnly = false, $app['accounts_name']);
         DB::install($app['dbs']['go1'], [function (DBSchema $schema) { IndexSchema::install($schema); }]);
 
-        if (!$this->isUnitTestCase) {
+        if (!$this->isUnitTestCase || true) {
             $client = $this->client($app);
             $indices = $this->indices();
             foreach ($indices as $index) {

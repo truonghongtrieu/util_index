@@ -244,21 +244,16 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
                             '_index'   => $indexName,
                             '_type'    => Schema::O_ENROLMENT,
                             '_id'      => EnrolmentTypes::TYPE_PLAN_ASSIGNED . ":{$plan->id}",
-                            '_parent'  => LoTypes::AWARD . ":{$plan->entity_id}",
                             '_routing' => $plan->instance_id,
                         ],
                     ];
                     $params['body'][] = $this->virtualFormat($plan, $user, $entity);
                 } else {
-                    $parentId = LoHelper::hasActiveMembership($this->go1, $plan->entity_id, $plan->instance_id)
-                        ? LoShareConsumer::id($plan->instance_id, $plan->entity_id)
-                        : $plan->entity_id;
                     $params['body'][] = [
                         'index' => [
                             '_index'   => $indexName,
                             '_type'    => Schema::O_ENROLMENT,
                             '_id'      => self::id($plan->id),
-                            '_parent'  => $parentId,
                             '_routing' => $plan->instance_id,
                         ],
                     ];
@@ -301,20 +296,11 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
 
     private function createVirtualEnrolment(stdClass $plan, stdClass $user, stdClass $entity)
     {
-        $parentIdByIndices = [];
-        if ($plan->entity_type == PlanTypes::ENTITY_LO) {
-            $parentIdByIndices = LoHelper::hasActiveMembership($this->go1, $plan->entity_id, $plan->instance_id)
-                ? [Schema::portalIndex($plan->instance_id) => LoShareConsumer::id($plan->instance_id, $plan->entity_id)]
-                : [];
-        }
-
         $indices = $this->indices($plan, $entity);
         $this->repository->create([
-            'type'           => Schema::O_ENROLMENT,
-            'parent'         => $plan->entity_id,
-            'id'             => self::id($plan->id),
-            'parent_indices' => $parentIdByIndices,
-            'body'           => $this->virtualFormat($plan, $user, $entity),
+            'type' => Schema::O_ENROLMENT,
+            'id'   => self::id($plan->id),
+            'body' => $this->virtualFormat($plan, $user, $entity),
         ], $indices);
     }
 
