@@ -171,11 +171,14 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     private function onCreate(stdClass $enrolment, stdClass $lo, $indices = null)
     {
         try {
-            $this->repository->create([
-                'type'           => Schema::O_ENROLMENT,
-                'id'             => $enrolment->id,
-                'body'           => $this->format($enrolment),
-            ], $indices ?? IndexHelper::enrolmentIndices($enrolment));
+            $this->client->create([
+                'index'   => Schema::INDEX,
+                'routing' => $enrolment->taken_instance_id,
+                'type'    => Schema::O_ENROLMENT,
+                'id'      => $enrolment->id,
+                'refresh' => $this->waitForCompletion,
+                'body'    => $this->format($enrolment),
+            ]);
 
             $user = UserHelper::loadByProfileId($this->go1, $enrolment->profile_id, $this->accountsName);
             $plan = PlanHelper::loadByEntityAndUser($this->go1, PlanTypes::ENTITY_LO, $enrolment->lo_id, $user->id);
@@ -194,11 +197,14 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     private function onUpdate(stdClass $enrolment, stdClass $lo, $indices = null)
     {
         try {
-            $this->repository->update([
-                'type' => Schema::O_ENROLMENT,
-                'id'   => $enrolment->id,
-                'body' => ['doc' => $this->format($enrolment), 'doc_as_upsert' => true],
-            ], $indices ?? IndexHelper::enrolmentIndices($enrolment));
+            $this->client->update([
+                'index'   => Schema::INDEX,
+                'routing' => $enrolment->taken_instance_id,
+                'type'    => Schema::O_ENROLMENT,
+                'id'      => $enrolment->id,
+                'body'    => ['doc' => $this->format($enrolment), 'doc_as_upsert' => true],
+                'refresh' => $this->waitForCompletion,
+            ]);
         } catch (ElasticsearchException $e) {
             $this->history->write(Schema::O_ENROLMENT, $enrolment->id, $e->getCode(), $e->getMessage());
         }
@@ -207,13 +213,12 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     private function onDelete(stdClass $enrolment, stdClass $lo, $indices = null)
     {
         try {
-            $this->repository->delete(
-                [
-                    'type' => Schema::O_ENROLMENT,
-                    'id'   => $enrolment->id,
-                ],
-                IndexHelper::enrolmentIndices($enrolment)
-            );
+            $this->client->delete([
+                'type'    => Schema::O_ENROLMENT,
+                'id'      => $enrolment->id,
+                'index'   => Schema::INDEX,
+                'routing' => $enrolment->taken_instance_id,
+            ]);
         } catch (ElasticsearchException $e) {
             $this->history->write(Schema::O_ENROLMENT, $enrolment->id, $e->getCode(), $e->getMessage());
         }
@@ -522,11 +527,13 @@ class EnrolmentConsumer implements ServiceConsumerInterface
         if ($enrolment) {
             if ($lo = LoHelper::load($this->go1, $enrolment->lo_id)) {
                 try {
-                    $this->repository->update([
-                        'type' => Schema::O_ENROLMENT,
-                        'id'   => $enrolment->id,
-                        'body' => ['doc' => $this->format($enrolment), 'doc_as_upsert' => true],
-                    ], $indices ?? IndexHelper::enrolmentIndices($enrolment));
+                    $this->client->update([
+                        'index'   => Schema::INDEX,
+                        'routing' => $enrolment->taken_instance_id,
+                        'type'    => Schema::O_ENROLMENT,
+                        'id'      => $enrolment->id,
+                        'body'    => ['doc' => $this->format($enrolment), 'doc_as_upsert' => true],
+                    ]);
                 } catch (ElasticsearchException $e) {
                     $this->history->write(Schema::O_ENROLMENT, $enrolment->id, $e->getCode(), $e->getMessage());
                 }
