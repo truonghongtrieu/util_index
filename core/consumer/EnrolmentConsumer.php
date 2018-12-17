@@ -35,7 +35,11 @@ use stdClass;
 
 class EnrolmentConsumer implements ServiceConsumerInterface
 {
-    protected $client;
+    /**
+     * @var Client
+     */
+    protected $esClient;
+
     protected $history;
     protected $db;
     protected $go1;
@@ -49,7 +53,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     protected $repository;
 
     public function __construct(
-        Client $client,
+        $esClient,
         HistoryRepository $history,
         Connection $db,
         Connection $go1,
@@ -62,7 +66,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
         bool $waitForCompletion,
         ElasticSearchRepository $repository
     ) {
-        $this->client = $client;
+        $this->esClient = $esClient;
         $this->history = $history;
         $this->db = $db;
         $this->go1 = $go1;
@@ -171,7 +175,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     private function onCreate(stdClass $enrolment, stdClass $lo, $indices = null)
     {
         try {
-            $this->client->create([
+            $this->esClient->create([
                 'index'   => Schema::INDEX,
                 'routing' => $enrolment->taken_instance_id,
                 'type'    => Schema::O_ENROLMENT,
@@ -183,10 +187,11 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             $user = UserHelper::loadByProfileId($this->go1, $enrolment->profile_id, $this->accountsName);
             $plan = PlanHelper::loadByEntityAndUser($this->go1, PlanTypes::ENTITY_LO, $enrolment->lo_id, $user->id);
             if ($plan) {
-                $this->client->delete([
-                    'index' => Schema::portalIndex($plan->instance_id),
-                    'type'  => Schema::O_ENROLMENT,
-                    'id'    => EnrolmentTypes::TYPE_PLAN_ASSIGNED . ":{$plan->id}",
+                $this->esClient->delete([
+                    'index'   => Schema::INDEX,
+                    'routing' => $plan->instance_id,
+                    'type'    => Schema::O_ENROLMENT,
+                    'id'      => EnrolmentTypes::TYPE_PLAN_ASSIGNED.":{$plan->id}",
                 ]);
             }
         } catch (ElasticsearchException $e) {
@@ -197,7 +202,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     private function onUpdate(stdClass $enrolment, stdClass $lo, $indices = null)
     {
         try {
-            $this->client->update([
+            $this->esClient->update([
                 'index'   => Schema::INDEX,
                 'routing' => $enrolment->taken_instance_id,
                 'type'    => Schema::O_ENROLMENT,
@@ -213,7 +218,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     private function onDelete(stdClass $enrolment, stdClass $lo, $indices = null)
     {
         try {
-            $this->client->delete([
+            $this->esClient->delete([
                 'type'    => Schema::O_ENROLMENT,
                 'id'      => $enrolment->id,
                 'index'   => Schema::INDEX,
@@ -244,7 +249,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             }
         }
         if ($params['body']) {
-            $response = $this->client->bulk($params);
+            $response = $this->esClient->bulk($params);
             $this->history->bulkLog($response);
         }
     }
@@ -264,7 +269,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             'refresh'             => $this->waitForCompletion,
             'wait_for_completion' => $this->waitForCompletion,
         ];
-        $this->client->updateByQuery($params);
+        $this->esClient->updateByQuery($params);
     }
 
     private function onParentUpdate(stdClass $lo)
@@ -286,7 +291,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             'refresh'             => $this->waitForCompletion,
             'wait_for_completion' => $this->waitForCompletion,
         ];
-        $this->client->updateByQuery($params);
+        $this->esClient->updateByQuery($params);
     }
 
     private function onAccountUpdate(stdClass $account)
@@ -301,7 +306,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
         }
 
         if (!empty($lines)) {
-            $this->client->updateByQuery(
+            $this->esClient->updateByQuery(
                 [
                     'index'               => Schema::INDEX,
                     'type'                => Schema::O_ENROLMENT,
@@ -359,7 +364,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             'wait_for_completion' => $this->waitForCompletion,
             'conflicts'           => 'abort',
         ];
-        $this->client->updateByQuery($params);
+        $this->esClient->updateByQuery($params);
     }
 
     private function onAccountDelete(stdClass $account)
@@ -380,7 +385,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             'refresh'             => $this->waitForCompletion,
             'wait_for_completion' => $this->waitForCompletion,
         ];
-        $this->client->updateByQuery($params);
+        $this->esClient->updateByQuery($params);
     }
 
     private function updateChildEnrolmentStatus(stdClass $lo)
@@ -388,7 +393,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
         $query = new BoolQuery();
         $query->add(new TermQuery('metadata.course_id', $lo->id), BoolQuery::MUST);
 
-        $this->client->updateByQuery([
+        $this->esClient->updateByQuery([
             'index'               => Schema::INDEX,
             'type'                => Schema::O_ENROLMENT,
             'body'                => [
@@ -457,7 +462,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             'refresh'             => $this->waitForCompletion,
             'wait_for_completion' => $this->waitForCompletion,
         ];
-        $this->client->updateByQuery($params);
+        $this->esClient->updateByQuery($params);
     }
 
     private function onEckUpdate(stdClass $entity)
@@ -508,7 +513,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             'wait_for_completion' => $this->waitForCompletion,
             'conflicts'           => 'abort',
         ];
-        $this->client->updateByQuery($params);
+        $this->esClient->updateByQuery($params);
     }
 
     private function onQuizUserAnswerUpdate(stdClass $answer, $indices = null)
@@ -527,7 +532,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
         if ($enrolment) {
             if ($lo = LoHelper::load($this->go1, $enrolment->lo_id)) {
                 try {
-                    $this->client->update([
+                    $this->esClient->update([
                         'index'   => Schema::INDEX,
                         'routing' => $enrolment->taken_instance_id,
                         'type'    => Schema::O_ENROLMENT,

@@ -174,7 +174,7 @@ abstract class IndexServiceTestCase extends TestCase
         $this->installGo1Schema($app['dbs']['go1'], $coreOnly = false, $app['accounts_name']);
         DB::install($app['dbs']['go1'], [function (DBSchema $schema) { IndexSchema::install($schema); }]);
 
-        if (!$this->isUnitTestCase || true) {
+        if (!$this->isUnitTestCase) {
             $client = $this->client($app);
             $indices = $this->indices();
             foreach ($indices as $index) {

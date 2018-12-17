@@ -98,7 +98,7 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
 
         $c['consumer.enrolment'] = function (Container $c) {
             return new EnrolmentConsumer(
-                $c['go1.client.es'],
+                $c['go1.client.es_writer'],
                 $c['history.repository'],
                 $c['dbs']['default'],
                 $c['dbs']['go1_write'],
@@ -115,7 +115,7 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
 
         $c['consumer.plan.enrolment-virtual'] = function (Container $c) {
             return new EnrolmentVirtualFromPlanConsumer(
-                $c['go1.client.es'],
+                $c['go1.client.es_writer'],
                 $c['history.repository'],
                 $c['dbs']['default'],
                 $c['dbs']['go1_write'],

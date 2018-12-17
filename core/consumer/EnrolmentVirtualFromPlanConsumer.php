@@ -3,7 +3,6 @@
 namespace go1\util_index\core\consumer;
 
 use Doctrine\DBAL\Connection;
-use Elasticsearch\Client;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use Exception;
 use go1\core\learning_record\enrolment\index\Microservice;
@@ -14,7 +13,6 @@ use go1\util\enrolment\EnrolmentHelper;
 use go1\util\enrolment\EnrolmentTypes;
 use go1\util\es\Schema;
 use go1\util\lo\LoHelper;
-use go1\util\lo\LoTypes;
 use go1\util\plan\PlanHelper;
 use go1\util\plan\PlanStatuses;
 use go1\util\plan\PlanTypes;
@@ -39,7 +37,7 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
     private $awardEnrolmentFormatter;
 
     public function __construct(
-        Client $client,
+        $esClient,
         HistoryRepository $history,
         Connection $db,
         Connection $go1,
@@ -55,7 +53,7 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
         ElasticSearchRepository $repository
     ) {
         parent::__construct(
-            $client,
+            $esClient,
             $history,
             $db,
             $go1,
@@ -190,7 +188,7 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
 
             return $enrolment
                 ? $this->updateEnrolmentDueDate($plan, $entity, $enrolment, ['due_date' => null, 'is_assigned' => 0, 'assigned_date' => null])
-                : $this->client->delete([
+                : $this->esClient->delete([
                     'index' => Schema::portalIndex($plan->instance_id),
                     'type'  => Schema::O_ENROLMENT,
                     'id'    => self::id($plan->id),
@@ -264,7 +262,7 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
             }
         }
         if ($params['body']) {
-            $response = $this->client->bulk($params);
+            $response = $this->esClient->bulk($params);
             $this->history->bulkLog($response);
         }
     }
