@@ -26,6 +26,7 @@ abstract class IndexServiceTestCase extends TestCase
     protected $mockMqClientThenConsume = false;
     protected $isUnitTestCase          = false;
     protected $messages;
+    protected $contexts   = [];
     protected $logs;
     protected $sqlite;
 
@@ -120,15 +121,17 @@ abstract class IndexServiceTestCase extends TestCase
             $queue
                 ->expects($this->any())
                 ->method('publish')
-                ->willReturnCallback(function ($body, $routingKey) {
+                ->willReturnCallback(function ($body, $routingKey, $context = []) {
                     $this->messages[$routingKey][] = $body;
+                    $this->contexts[$routingKey][] = $context;
                 });
 
             $queue
                 ->expects($this->any())
                 ->method('queue')
-                ->willReturnCallback(function ($body, $routingKey) {
+                ->willReturnCallback(function ($body, $routingKey, $context = []) {
                     $this->messages[$routingKey][] = $body;
+                    $this->contexts[$routingKey][] = $context;
                 });
 
             return $queue;
