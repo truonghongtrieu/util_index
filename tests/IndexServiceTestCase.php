@@ -104,6 +104,10 @@ abstract class IndexServiceTestCase extends TestCase
             ? $this->mockMqClientToDoConsume($app)
             : $this->mockMqClient($app);
 
+        $app->extend('go1.client.es_writer', function () use ($app) {
+            return $app['go1.client.es'];
+        });
+
         $this->appInstall($app);
 
         return $app;
