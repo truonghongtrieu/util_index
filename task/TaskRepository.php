@@ -241,11 +241,11 @@ class TaskRepository
         $handler = $this->getHandler($task->currentHandler);
         $packages = [];
         $maxPages = 1000; // avoid to generate too many tasks once
-        $maxOffset = $task->stats[$task->currentHandler] - 1;
+        $maxOffset = $task->stats[$task->currentHandler];
         $offset = $task->currentOffset;
         for ($i = 0; $i < $maxPages && $offset < $maxOffset; $i++) {
             $offset = $task->currentOffset + $i;
-            $isLast = ($i == $maxPages - 1) || ($offset == $maxOffset);
+            $isLast = ($i == $maxPages - 1) || ($offset == $maxOffset - 1);
             $idFromOffset = 0;
             if ($offset > 0) {
                 $idFromOffset = method_exists($handler, 'offsetToId')
