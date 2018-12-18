@@ -33,27 +33,30 @@ class EnrolmentFormatter
     private $go1;
     private $assignment;
     private $quiz;
-    private $group;
     private $accountsName;
     private $loFormatter;
     private $userFormatter;
+    private $rGroupMembership;
+    private $rGroupAssignment;
 
     public function __construct(
         Connection $go1,
         ?Connection $assignment,
         ?Connection $quiz,
-        ?Connection $group,
         string $accountsName,
         LoFormatter $loFormatter,
-        UserFormatter $userFormatter
+        UserFormatter $userFormatter,
+        GroupMembershipRepository $rGroupMembership,
+        GroupAssignmentRepository $rGroupAssignment
     ) {
         $this->go1 = $go1;
         $this->assignment = $assignment;
         $this->quiz = $quiz;
-        $this->group = $group;
         $this->accountsName = $accountsName;
         $this->loFormatter = $loFormatter;
         $this->userFormatter = $userFormatter;
+        $this->rGroupMembership = $rGroupMembership;
+        $this->rGroupAssignment = $rGroupAssignment;
     }
 
     public function format(stdClass $enrolment, string $type = EnrolmentTypes::TYPE_ENROLMENT, stdClass $user = null)
@@ -302,12 +305,10 @@ class EnrolmentFormatter
     private function getDueDate(int $enrolmentId, int $accountId = 0, int $portalId = 0, int $loId = 0): ?DefaultDateTime
     {
         $dueDate = EnrolmentHelper::dueDate($this->go1, $enrolmentId);
-        if (!$dueDate && $this->group) {
-            $rGroupMembership = new GroupMembershipRepository($this->group, $this->go1);
-            $groupIds = $rGroupMembership->loadGroupIdsByAccountId($accountId, $portalId);
+        if (!$dueDate) {
+            $groupIds = $this->rGroupMembership->loadGroupIdsByAccountId($accountId, $portalId);
             if (!empty($groupIds)) {
-                $rGroupAssignment = new GroupAssignmentRepository($this->group);
-                $time = $rGroupAssignment->getDueDate($groupIds, $loId);
+                $time = $this->rGroupAssignment->getDueDate($groupIds, $loId);
                 $time && ($dueDate = DateTime::create($time));
             }
         }
