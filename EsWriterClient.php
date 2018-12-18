@@ -42,7 +42,7 @@ class EsWriterClient
 
     public function updateByQuery($params)
     {
-        $this->validate($params, 'index,type,body,routing');
+        $this->validate($params, 'index,type,body');
 
         $uri = sprintf('/%s/%s/_update_by_query', $params['index'], $params['type']);
         isset($params['routing']) && $uri .= sprintf('?routing=%s', $params['routing']);
