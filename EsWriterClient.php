@@ -21,7 +21,7 @@ class EsWriterClient
     {
         $assertion = Assert::lazy();
         foreach (explode(",", $requiredFields) as $requiredField) {
-            $assertion->that($params[$requiredField] ?? null, $requiredField)->notEmpty();
+            $assertion->that($params[$requiredField] ?? null, $requiredField)->notNull();
         }
         $assertion->verifyNow();
     }
@@ -42,7 +42,7 @@ class EsWriterClient
 
     public function updateByQuery($params)
     {
-        $this->validate($params, 'index,type,body,routing');
+        $this->validate($params, 'index,type,body');
 
         $uri = sprintf('/%s/%s/_update_by_query', $params['index'], $params['type']);
         isset($params['routing']) && $uri .= sprintf('?routing=%s', $params['routing']);
@@ -83,23 +83,20 @@ class EsWriterClient
 
     public function bulk($params)
     {
-        $this->validate($params, 'index,type,body');
-
+        $this->validate($params, 'body');
         # Parse ElasticSearch\Client::bulk into es writer
         $offset = 0;
         while (isset($params['body'][$offset])) {
-            $metadata = $params['body'][$offset];
-            $body = $params['body'][$offset + 1];
-            $op = array_keys($metadata)[0];
+            $op = array_keys($params['body'][$offset])[0];
+            $metadata = $params['body'][$offset][$op];
 
-            $_params = array_merge([
-                'index'   => $params['index'],
-                'type'    => $params['type'],
+            $_params = [
+                'index'   => $metadata['_index'] ?? $params['index'] ?? null,
+                'type'    => $metadata['_type'] ?? $params['type'] ?? null,
                 'id'      => $metadata['_id'] ?? null,
                 'routing' => $metadata['_routing'] ?? null,
-                'body'    => $body,
-            ], $metadata[$op]);
-
+                'body'    => $params['body'][$offset + 1],
+            ];
             switch ($op) {
                 case 'index':
                     $this->index($_params);
