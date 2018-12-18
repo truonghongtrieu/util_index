@@ -2,7 +2,10 @@
 
 namespace go1\util_index\core;
 
+use DateTime as DefaultDateTime;
 use Doctrine\DBAL\Connection;
+use go1\core\group\group_schema\v1\repository\GroupAssignmentRepository;
+use go1\core\group\group_schema\v1\repository\GroupMembershipRepository;
 use go1\util\assignment\SubmissionHelper;
 use go1\util\DateTime;
 use go1\util\DB;
@@ -33,6 +36,8 @@ class EnrolmentFormatter
     private $accountsName;
     private $loFormatter;
     private $userFormatter;
+    private $rGroupMembership;
+    private $rGroupAssignment;
 
     public function __construct(
         Connection $go1,
@@ -40,7 +45,9 @@ class EnrolmentFormatter
         ?Connection $quiz,
         string $accountsName,
         LoFormatter $loFormatter,
-        UserFormatter $userFormatter
+        UserFormatter $userFormatter,
+        GroupMembershipRepository $rGroupMembership,
+        GroupAssignmentRepository $rGroupAssignment
     ) {
         $this->go1 = $go1;
         $this->assignment = $assignment;
@@ -48,6 +55,8 @@ class EnrolmentFormatter
         $this->accountsName = $accountsName;
         $this->loFormatter = $loFormatter;
         $this->userFormatter = $userFormatter;
+        $this->rGroupMembership = $rGroupMembership;
+        $this->rGroupAssignment = $rGroupAssignment;
     }
 
     public function format(stdClass $enrolment, string $type = EnrolmentTypes::TYPE_ENROLMENT, stdClass $user = null)
@@ -59,6 +68,10 @@ class EnrolmentFormatter
         $user = $user ?: UserHelper::loadByProfileId($this->go1, $enrolment->profile_id, $this->accountsName);
         $assessors = EnrolmentHelper::assessorIds($this->go1, $enrolment->id);
         $hasAssessor = $assessors ? 1 : 0;
+
+        if ($user && ($account = $this->findAccount($enrolment, $user))) {
+            $account = $this->userFormatter->format($account);
+        }
 
         if ($lo = LoHelper::load($this->go1, $enrolment->lo_id)) {
             $formattedLo = $this->loFormatter->format($lo, true);
@@ -84,8 +97,9 @@ class EnrolmentFormatter
             }
 
             # Get due date
-            if ($user && !property_exists($enrolment, 'due_date')) {
-                if ($dueDate = EnrolmentHelper::dueDate($this->go1, $enrolment->id)) {
+            if ($account && !property_exists($enrolment, 'due_date')) {
+                $portalId = (int) ($enrolment->routing ?? $enrolment->taken_instance_id ?? $enrolment->instance_id);
+                if ($dueDate = $this->getDueDate($enrolment->id, $account['id'], $portalId, $lo->id)) {
                     $enrolment->due_date = $dueDate->format(DATE_ISO8601);
                 }
             }
@@ -99,10 +113,6 @@ class EnrolmentFormatter
             $this->submittedMarkedDates($enrolment, $lo);
 
             $progress = $this->progress($lo, $enrolmentModel);
-        }
-
-        if ($user && ($account = $this->findAccount($enrolment, $user))) {
-            $account = $this->userFormatter->format($account);
         }
 
         $certificates = [];
@@ -290,5 +300,19 @@ class EnrolmentFormatter
             'SELECT status FROM gc_enrolment_revision WHERE profile_id = ? AND lo_id = ? AND taken_instance_id = ? ORDER BY id DESC LIMIT 1',
             [$enrolment->profile_id, $enrolment->lo_id, $enrolment->taken_instance_id]
         );
+    }
+
+    private function getDueDate(int $enrolmentId, int $accountId = 0, int $portalId = 0, int $loId = 0): ?DefaultDateTime
+    {
+        $dueDate = EnrolmentHelper::dueDate($this->go1, $enrolmentId);
+        if (!$dueDate) {
+            $groupIds = $this->rGroupMembership->loadGroupIdsByAccountId($accountId, $portalId);
+            if (!empty($groupIds)) {
+                $time = $this->rGroupAssignment->getDueDate($groupIds, $loId);
+                $time && ($dueDate = DateTime::create($time));
+            }
+        }
+
+        return $dueDate;
     }
 }

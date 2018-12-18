@@ -2,6 +2,8 @@
 
 namespace go1\util_index\core;
 
+use go1\core\group\group_schema\v1\repository\GroupAssignmentRepository;
+use go1\core\group\group_schema\v1\repository\GroupMembershipRepository;
 use go1\core\learning_record\enrolment\index\consumer\EnrolmentAssessorConsumer;
 use go1\util\location\LocationRepository;
 use go1\util_index\core\consumer\EnrolmentConsumer;
@@ -22,6 +24,14 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
     {
         $c['location.repository'] = function (Container $c) {
             return new LocationRepository($c['dbs']['go1_write'], $c['go1.client.mq']);
+        };
+
+        $c['group-membership.repository'] = function (Container $c) {
+            return new GroupMembershipRepository($c['dbs']['group'], $c['dbs']['go1']);
+        };
+
+        $c['group-assignment.repository'] = function (Container $c) {
+            return new GroupAssignmentRepository($c['dbs']['group']);
         };
 
         $c['formatter.eck_data'] = function (Container $c) {
@@ -70,7 +80,9 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['dbs']['quiz'] ?? null,
                 $c['accounts_name'],
                 $c['formatter.lo'],
-                $c['formatter.user']
+                $c['formatter.user'],
+                $c['group-membership.repository'],
+                $c['group-assignment.repository']
             );
         };
 
