@@ -120,5 +120,7 @@ class EsWriterClient
 
             $offset += 2;
         }
+
+        return [];
     }
 }
