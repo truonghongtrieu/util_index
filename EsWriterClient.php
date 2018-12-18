@@ -28,7 +28,7 @@ class EsWriterClient
 
     public function delete($params)
     {
-        $this->validate($params, 'index,type,id,body');
+        $this->validate($params, 'index,type,id,routing');
         $uri = sprintf(
             '/%s/%s/%s?routing=%s',
             $params['index'],
