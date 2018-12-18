@@ -34,9 +34,15 @@ class InstallController
         }
 
         if (!$this->es->indices()->exists(['index' => Index::LEARNING_RECORD_INDEX])) {
+            $settings['settings'] = [
+                'number_of_shards'                 => 2,
+                'number_of_replicas'               => 1,
+                'index.mapping.total_fields.limit' => 5000,
+            ];
+
             $this->es->indices()->create([
                 'index' => Index::LEARNING_RECORD_INDEX,
-                'body'  => Index::BODY,
+                'body'  => Index::BODY + $settings,
             ]);
         }
 
