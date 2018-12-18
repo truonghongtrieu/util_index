@@ -33,6 +33,13 @@ class InstallController
             $this->es->indices()->create(Index::SCHEMA);
         }
 
+        if (!$this->es->indices()->exists(['index' => Index::LEARNING_RECORD_INDEX])) {
+            $this->es->indices()->create([
+                'index' => Index::LEARNING_RECORD_INDEX,
+                'body'  => Index::BODY,
+            ]);
+        }
+
         if (!$this->es->indices()->exists(['index' => Index::MARKETPLACE_INDEX])) {
             $this->es->indices()->create([
                 'index' => Index::MARKETPLACE_INDEX,

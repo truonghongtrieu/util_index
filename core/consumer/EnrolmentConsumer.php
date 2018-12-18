@@ -239,7 +239,6 @@ class EnrolmentConsumer implements ServiceConsumerInterface
                         '_index'   => $indexName,
                         '_type'    => Schema::O_ENROLMENT,
                         '_id'      => $enrolment->id,
-                        '_parent'  => $marketplace ? $enrolment->lo_id : $this->parentId($enrolment->lo_id, $enrolment->taken_instance_id),
                         '_routing' => $enrolment->routing ?? $enrolment->taken_instance_id,
                     ],
                 ];
