@@ -26,7 +26,6 @@ use go1\util_index\core\LoFormatter;
 use go1\util_index\core\UserFormatter;
 use go1\util_index\ElasticSearchRepository;
 use go1\util_index\HistoryRepository;
-use go1\util_index\IndexHelper;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
 use stdClass;
@@ -189,9 +188,10 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
             return $enrolment
                 ? $this->updateEnrolmentDueDate($plan, $entity, $enrolment, ['due_date' => null, 'is_assigned' => 0, 'assigned_date' => null])
                 : $this->esClient->delete([
-                    'index' => Schema::portalIndex($plan->instance_id),
-                    'type'  => Schema::O_ENROLMENT,
-                    'id'    => self::id($plan->id),
+                    'index'   => Schema::LEARNING_RECORD_INDEX,
+                    'routing' => $plan->instance_id,
+                    'type'    => Schema::O_ENROLMENT,
+                    'id'      => self::id($plan->id),
                 ]);
         } catch (ElasticsearchException $e) {
             $this->history->write(Schema::O_PLAN, $plan->id, $e->getCode(), $e->getMessage());
@@ -294,30 +294,13 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
 
     private function createVirtualEnrolment(stdClass $plan, stdClass $user, stdClass $entity)
     {
-        $indices = $this->indices($plan, $entity);
-        $this->repository->create([
-            'type' => Schema::O_ENROLMENT,
-            'id'   => self::id($plan->id),
-            'body' => $this->virtualFormat($plan, $user, $entity),
-        ], $indices);
-    }
-
-    private function indices(stdClass $plan, stdClass $entity, stdClass $enrolment = null): array
-    {
-        switch ($plan->entity_type) {
-
-            case PlanTypes::ENTITY_AWARD:
-                return $enrolment
-                    ? IndexHelper::awardEnrolmentIndices($enrolment, $entity)
-                    : self::planIndices($plan);
-
-            case PlanTypes::ENTITY_LO:
-                return $enrolment
-                    ? IndexHelper::enrolmentIndices($enrolment)
-                    : self::planIndices($plan);
-        }
-
-        return [];
+        $this->esClient->create([
+            'index'   => Schema::LEARNING_RECORD_INDEX,
+            'type'    => Schema::O_ENROLMENT,
+            'routing' => $plan->instance_id,
+            'id'      => self::id($plan->id),
+            'body'    => $this->virtualFormat($plan, $user, $entity),
+        ]);
     }
 
     public static function planIndices(stdClass $plan)
@@ -344,11 +327,13 @@ class EnrolmentVirtualFromPlanConsumer extends EnrolmentConsumer
                 ];
             }
 
-            $this->repository->update([
-                'type' => Schema::O_ENROLMENT,
-                'id'   => $enrolmentId,
-                'body' => ['doc' => $doc],
-            ], $this->indices($plan, $entity, $enrolment));
+            $this->esClient->update([
+                'index'   => Schema::LEARNING_RECORD_INDEX,
+                'routing' => $plan->instance_id,
+                'type'    => Schema::O_ENROLMENT,
+                'id'      => $enrolmentId,
+                'body'    => ['doc' => $doc],
+            ]);
         } catch (Exception $e) {
             $this->history->write(Schema::O_PLAN, $plan->id, $e->getCode(), $e->getMessage());
         }
