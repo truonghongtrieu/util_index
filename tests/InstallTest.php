@@ -18,5 +18,6 @@ class InstallTest extends IndexServiceTestCase
 
         $this->assertTrue($db->getSchemaManager()->tablesExist(['index_history', 'index_kv']));
         $this->assertEquals($client->indices()->getMapping(['index' => Schema::INDEX]), [Schema::INDEX => ['mappings' => Schema::MAPPING]]);
+        $this->assertEquals($client->indices()->getMapping(['index' => Schema::LEARNING_RECORD_INDEX]), [Schema::INDEX => ['mappings' => Schema::MAPPING]]);
     }
 }

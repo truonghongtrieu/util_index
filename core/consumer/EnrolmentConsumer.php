@@ -176,7 +176,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     {
         try {
             $this->esClient->create([
-                'index'   => Schema::INDEX,
+                'index'   => Schema::LEARNING_RECORD_INDEX,
                 'routing' => $enrolment->taken_instance_id,
                 'type'    => Schema::O_ENROLMENT,
                 'id'      => $enrolment->id,
@@ -188,7 +188,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             $plan = PlanHelper::loadByEntityAndUser($this->go1, PlanTypes::ENTITY_LO, $enrolment->lo_id, $user->id);
             if ($plan) {
                 $this->esClient->delete([
-                    'index'   => Schema::INDEX,
+                    'index'   => Schema::LEARNING_RECORD_INDEX,
                     'routing' => $plan->instance_id,
                     'type'    => Schema::O_ENROLMENT,
                     'id'      => EnrolmentTypes::TYPE_PLAN_ASSIGNED.":{$plan->id}",
@@ -203,7 +203,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     {
         try {
             $this->esClient->update([
-                'index'   => Schema::INDEX,
+                'index'   => Schema::LEARNING_RECORD_INDEX,
                 'routing' => $enrolment->taken_instance_id,
                 'type'    => Schema::O_ENROLMENT,
                 'id'      => $enrolment->id,
@@ -221,7 +221,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             $this->esClient->delete([
                 'type'    => Schema::O_ENROLMENT,
                 'id'      => $enrolment->id,
-                'index'   => Schema::INDEX,
+                'index'   => Schema::LEARNING_RECORD_INDEX,
                 'routing' => $enrolment->taken_instance_id,
             ]);
         } catch (ElasticsearchException $e) {
@@ -256,7 +256,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     private function onLoUpdate(stdClass $lo)
     {
         $params = [
-            'index'               => Schema::INDEX,
+            'index'               => Schema::LEARNING_RECORD_INDEX,
             'type'                => Schema::O_ENROLMENT,
             'body'                => [
                 'query'  => (new TermQuery('lo_id', $lo->id))->toArray(),
@@ -274,7 +274,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
     private function onParentUpdate(stdClass $lo)
     {
         $params = [
-            'index'               => Schema::INDEX,
+            'index'               => Schema::LEARNING_RECORD_INDEX,
             'type'                => Schema::O_ENROLMENT,
             'body'                => [
                 'query'  => (new TermQuery('parent_lo.id', $lo->id))->toArray(),
@@ -307,7 +307,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
         if (!empty($lines)) {
             $this->esClient->updateByQuery(
                 [
-                    'index'               => Schema::INDEX,
+                    'index'               => Schema::LEARNING_RECORD_INDEX,
                     'type'                => Schema::O_ENROLMENT,
                     'body'                => [
                         'query'  => (new TermQuery('metadata.account_id', $account->id))->toArray(),
@@ -343,7 +343,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
         }
 
         $params = [
-            'index'               => Schema::INDEX,
+            'index'               => Schema::LEARNING_RECORD_INDEX,
             'type'                => Schema::O_ENROLMENT,
             'body'                => [
                 'query'  => (new TermQuery('assessor.id', $user->id))->toArray(),
@@ -373,7 +373,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
         }
 
         $params = [
-            'index'               => Schema::INDEX,
+            'index'               => Schema::LEARNING_RECORD_INDEX,
             'type'                => Schema::O_ENROLMENT,
             'body'                => [
                 'query'  => (new TermQuery('metadata.account_id', $account->id))->toArray(),
@@ -393,7 +393,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
         $query->add(new TermQuery('metadata.course_id', $lo->id), BoolQuery::MUST);
 
         $this->esClient->updateByQuery([
-            'index'               => Schema::INDEX,
+            'index'               => Schema::LEARNING_RECORD_INDEX,
             'type'                => Schema::O_ENROLMENT,
             'body'                => [
                 'query'  => $query->toArray(),
@@ -447,7 +447,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
         $query->add(new TermQuery('metadata.account_id', $accountId), BoolQuery::MUST);
 
         $params = [
-            'index'               => Schema::INDEX,
+            'index'               => Schema::LEARNING_RECORD_INDEX,
             'type'                => Schema::O_ENROLMENT,
             'body'                => [
                 'query'  => $query->toArray(),
@@ -499,7 +499,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             $lines[] = "ctx._source.account.$k = params.$k";
         }
         $params = [
-            'index'               => Schema::INDEX,
+            'index'               => Schema::LEARNING_RECORD_INDEX,
             'type'                => Schema::O_ENROLMENT,
             'body'                => [
                 'query'  => (new TermQuery('metadata.account_id', $id))->toArray(),
@@ -532,7 +532,7 @@ class EnrolmentConsumer implements ServiceConsumerInterface
             if ($lo = LoHelper::load($this->go1, $enrolment->lo_id)) {
                 try {
                     $this->esClient->update([
-                        'index'   => Schema::INDEX,
+                        'index'   => Schema::LEARNING_RECORD_INDEX,
                         'routing' => $enrolment->taken_instance_id,
                         'type'    => Schema::O_ENROLMENT,
                         'id'      => $enrolment->id,

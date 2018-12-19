@@ -99,34 +99,6 @@ class LoAssessorConsumer implements ServiceConsumerInterface
         } catch (ElasticsearchException $e) {
             $this->history->write(Schema::O_LO, $courseId, $e->getCode(), $e->getMessage());
         }
-
-        $response = $this->es->updateByQuery([
-            'index'               => Schema::INDEX,
-            'type'                => Schema::O_ENROLMENT,
-            'body'                => [
-                'query'  => call_user_func(
-                    function () use ($courseId) {
-                        $query = new BoolQuery();
-                        $query->add(new TermQuery('metadata.has_assessor', 0), BoolQuery::MUST);
-                        $query->add(new TermQuery('metadata.course_id', $courseId), BoolQuery::MUST);
-
-                        return $query->toArray();
-                    }
-                ),
-                'script' => [
-                    'inline' => "ctx._source.assessors = params.assessors;",
-                    'params' => ['assessors' => (count($assessors) <= 1) ? $assessors : []],
-                ],
-            ],
-            'refresh'             => true,
-            # When a course changed assessors
-            # There will be 2 messages published(ro.create then ro.delete).
-            # We need wait until each query completed to avoid conflicts.
-            'wait_for_completion' => true,
-            'conflicts'           => 'proceed',
-        ]);
-
-        $this->handleConflict($response, $routingKey, $body);
     }
 
     protected function handleConflict($response, $routingKey, $body)
