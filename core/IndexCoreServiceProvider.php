@@ -26,14 +26,6 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
             return new LocationRepository($c['dbs']['go1_write'], $c['go1.client.mq']);
         };
 
-        $c['group-membership.repository'] = function (Container $c) {
-            return new GroupMembershipRepository($c['dbs']['group'], $c['dbs']['go1']);
-        };
-
-        $c['group-assignment.repository'] = function (Container $c) {
-            return new GroupAssignmentRepository($c['dbs']['group']);
-        };
-
         $c['formatter.eck_data'] = function (Container $c) {
             return new AccountFieldFormatter($c['dbs']['go1'], $c['dbs']['eck']);
         };
@@ -80,9 +72,7 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['dbs']['quiz'] ?? null,
                 $c['accounts_name'],
                 $c['formatter.lo'],
-                $c['formatter.user'],
-                $c['group-membership.repository'],
-                $c['group-assignment.repository']
+                $c['formatter.user']
             );
         };
 
