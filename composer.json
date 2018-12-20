@@ -17,16 +17,9 @@
     "go1/util":                    "dev-master",
     "go1/util_core":               "dev-master",
     "go1/util_core_clients":       "dev-master",
-    "go1-core/group/group-schema": "dev-master",
     "monolog/monolog":             "^1.19.0",
     "ongr/elasticsearch-dsl":      "^5.0"
   },
-  "repositories":  [
-    {
-      "type": "vcs",
-      "url":  "git@code.go1.com.au:go1-core/group/group-schema.git"
-    }
-  ],
   "scripts":           {
     "lint": "php-cs-fixer fix --using-cache=no --rules='{\"braces\": {\"allow_single_line_closure\": true}}' ."
   }

@@ -36,8 +36,6 @@ class EnrolmentFormatter
     private $accountsName;
     private $loFormatter;
     private $userFormatter;
-    private $rGroupMembership;
-    private $rGroupAssignment;
 
     public function __construct(
         Connection $go1,
@@ -45,9 +43,7 @@ class EnrolmentFormatter
         ?Connection $quiz,
         string $accountsName,
         LoFormatter $loFormatter,
-        UserFormatter $userFormatter,
-        GroupMembershipRepository $rGroupMembership,
-        GroupAssignmentRepository $rGroupAssignment
+        UserFormatter $userFormatter
     ) {
         $this->go1 = $go1;
         $this->assignment = $assignment;
@@ -55,8 +51,6 @@ class EnrolmentFormatter
         $this->accountsName = $accountsName;
         $this->loFormatter = $loFormatter;
         $this->userFormatter = $userFormatter;
-        $this->rGroupMembership = $rGroupMembership;
-        $this->rGroupAssignment = $rGroupAssignment;
     }
 
     public function format(stdClass $enrolment, string $type = EnrolmentTypes::TYPE_ENROLMENT, stdClass $user = null)
@@ -97,9 +91,8 @@ class EnrolmentFormatter
             }
 
             # Get due date
-            if ($account && !property_exists($enrolment, 'due_date')) {
-                $portalId = (int) ($enrolment->routing ?? $enrolment->taken_instance_id ?? $enrolment->instance_id);
-                if ($dueDate = $this->getDueDate($enrolment->id, $account['id'], $portalId, $lo->id)) {
+            if ($user && !property_exists($enrolment, 'due_date')) {
+                if ($dueDate = EnrolmentHelper::dueDate($this->go1, $enrolment->id)) {
                     $enrolment->due_date = $dueDate->format(DATE_ISO8601);
                 }
             }
@@ -300,19 +293,5 @@ class EnrolmentFormatter
             'SELECT status FROM gc_enrolment_revision WHERE profile_id = ? AND lo_id = ? AND taken_instance_id = ? ORDER BY id DESC LIMIT 1',
             [$enrolment->profile_id, $enrolment->lo_id, $enrolment->taken_instance_id]
         );
-    }
-
-    private function getDueDate(int $enrolmentId, int $accountId = 0, int $portalId = 0, int $loId = 0): ?DefaultDateTime
-    {
-        $dueDate = EnrolmentHelper::dueDate($this->go1, $enrolmentId);
-        if (!$dueDate) {
-            $groupIds = $this->rGroupMembership->loadGroupIdsByAccountId($accountId, $portalId);
-            if (!empty($groupIds)) {
-                $time = $this->rGroupAssignment->getDueDate($groupIds, $loId);
-                $time && ($dueDate = DateTime::create($time));
-            }
-        }
-
-        return $dueDate;
     }
 }
