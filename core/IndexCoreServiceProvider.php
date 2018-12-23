@@ -7,7 +7,6 @@ use go1\core\group\group_schema\v1\repository\GroupMembershipRepository;
 use go1\core\learning_record\enrolment\index\consumer\EnrolmentAssessorConsumer;
 use go1\util\location\LocationRepository;
 use go1\util_index\core\consumer\EnrolmentConsumer;
-use go1\util_index\core\consumer\EnrolmentVirtualFromPlanConsumer;
 use go1\util_index\core\consumer\LoConsumer;
 use go1\util_index\core\consumer\TaskConsumer;
 use Pimple\Container;
@@ -38,10 +37,6 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['accounts_name'],
                 $c['formatter.eck_data']
             );
-        };
-
-        $c['formatter.award.enrolment'] = function (Container $c) {
-            return new AwardEnrolmentFormatter($c['dbs']['go1'], $c['dbs']['award'], $c['formatter.lo'], $c['formatter.user']);
         };
 
         $c['formatter.event'] = function (Container $c) {
@@ -107,25 +102,6 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
                 $c['dbs']['social_write'] ?? null,
                 $c['accounts_name'],
                 $c['formatter.enrolment'],
-                $c['formatter.lo'],
-                $c['formatter.user'],
-                $c['formatter.eck_data'],
-                $c['waitForCompletion'],
-                $c['repository.es']
-            );
-        };
-
-        $c['consumer.plan.enrolment-virtual'] = function (Container $c) {
-            return new EnrolmentVirtualFromPlanConsumer(
-                $c['go1.client.es_writer'],
-                $c['history.repository'],
-                $c['dbs']['default'],
-                $c['dbs']['go1_write'],
-                $c['dbs']['social_write'],
-                $c['dbs']['award_write'],
-                $c['accounts_name'],
-                $c['formatter.enrolment'],
-                $c['formatter.award.enrolment'],
                 $c['formatter.lo'],
                 $c['formatter.user'],
                 $c['formatter.eck_data'],
