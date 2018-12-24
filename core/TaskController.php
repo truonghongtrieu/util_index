@@ -146,7 +146,7 @@ class TaskController
         }
 
         if (!$task = $this->rTask->load($id)) {
-            return Error::jr404('Task not found', 404);
+            return Error::jr404('Task not found');
         }
 
         if (Task::NOT_STARTED != $task->status) {

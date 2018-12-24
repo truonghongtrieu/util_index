@@ -8,6 +8,7 @@ use go1\app\DomainService;
 use go1\clients\MqClient;
 use go1\util\DB;
 use go1\util\es\mock\EsInstallTrait;
+use go1\util\es\Schema;
 use go1\util\schema\InstallTrait;
 use go1\util\user\UserHelper;
 use go1\util_index\HistoryRepository;

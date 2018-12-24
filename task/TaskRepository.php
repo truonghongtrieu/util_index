@@ -198,8 +198,15 @@ class TaskRepository
         $this->verify($task);
     }
 
-    public function verify(Task $task, bool $generate = true)
+    public function verify(Task $task, $payload = null)
     {
+        $generate = empty($payload) || !empty($payload->isLast);
+
+        if (!empty($payload)) {
+            $task->processedItems++;
+            $task->percent = $this->calculatePercent($task);
+        }
+
         # ---------------------
         # generate unit-of-works
         # ---------------------
@@ -207,20 +214,26 @@ class TaskRepository
             if ($generate) {
                 $this->generateItems($task);
             }
-
+            $this->update($task);
             return null;
         }
 
         # ---------------------
         # move to next handler; complete if nothing found.
         # ---------------------
-        $task->processedItems += $task->stats[$task->currentHandler] ?? 0;
         $task->currentHandler = $task->nextHandler();
         while ($task->currentHandler && (0 == $task->stats[$task->currentHandler] ?? 0)) {
             $task->currentHandler = $task->nextHandler();
         }
 
-        if (!$task->currentHandler) {
+        if (empty($payload) && !$task->currentHandler) {
+            // we don't have anything to do here :(
+            $this->finish($task);
+            return;
+        }
+
+        if (!$task->currentHandler && !empty($payload->isLast) && $task->percent >= 100) {
+            // last chunk exceeded
             $this->finish($task);
 
             return null;
@@ -228,7 +241,6 @@ class TaskRepository
 
         $task->currentOffset = 0;
         $task->currentIdFromOffset = 0;
-        $task->percent = $this->calculatePercent($task);
         $this->update($task);
 
         if ($generate) {
@@ -241,9 +253,9 @@ class TaskRepository
         $handler = $this->getHandler($task->currentHandler);
         $packages = [];
         $numOfChunks = 100; // avoid to generate too many tasks once
-        $maxOffset = $task->stats[$task->currentHandler];
+        $maxOffset = $task->stats[$task->currentHandler] ?? 0;
         $offset = $task->currentOffset;
-        for ($i = 0; $i < $numOfChunks && $offset < $maxOffset; $i++) {
+        for ($i = 0; $i < $numOfChunks && $offset <= $maxOffset; $i++) {
             $offset = $task->currentOffset + $i;
             $isLast = ($i == $numOfChunks - 1) || ($offset >= $maxOffset - 1);
             $idFromOffset = 0;
@@ -280,6 +292,9 @@ class TaskRepository
 
     private function calculatePercent(Task $task)
     {
+        if ($task->totalItems == 0) {
+            return 100;
+        }
         return ($task->processedItems / $task->totalItems) * 100;
     }
 

@@ -33,8 +33,9 @@ class TaskConsumer implements ServiceConsumerInterface
         if (IndexService::WORKER_TASK_PROCESS === $routingKey) {
             if ($task = $this->repository->load($payload->id)) {
                 try {
-                    $this->process($payload, $task);
-                    $this->repository->verify($task, !empty($payload->isLast));
+                    $processTask = clone $task;
+                    $this->process($payload, $processTask);
+                    $this->repository->verify($task, $payload);
                 } catch (Exception $e) {
                     $this->history->write('task_process', $task->id, 500, ['message' => $e->getMessage(), 'data' => $payload]);
                 }
@@ -44,15 +45,15 @@ class TaskConsumer implements ServiceConsumerInterface
 
     private function process(stdClass &$payload, Task $task)
     {
-        if (!$handler = $this->repository->getHandler($task->currentHandler)) {
+        if (!$handler = $this->repository->getHandler($payload->handler)) {
             return;
         }
-
         $limit = isset($handler::$limit) ? $handler::$limit : $task->limit;
         $task->offset = $payload->currentOffset ?? 0;
         $task->offsetId = $payload->currentIdFromOffset ?? 0;
         $task->currentIdFromOffset = $payload->currentIdFromOffset ?? 0;
         $task->limit = $limit;
+        $task->currentHandler = $payload->handler;
         $handler->handle($task);
     }
 }
