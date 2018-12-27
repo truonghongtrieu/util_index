@@ -13,7 +13,6 @@ use go1\util\schema\InstallTrait;
 use go1\util\user\UserHelper;
 use go1\util_index\HistoryRepository;
 use go1\util_index\IndexSchema;
-use go1\util_index\IndexService;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,7 +52,7 @@ abstract class IndexServiceTestCase extends TestCase
             putenv('ES_URL=http://localhost:9200');
         }
 
-        /** @var IndexService $app */
+        /** @var DomainService $app */
         $app = require $this->publicDir() . '/index.php';
         $app['waitForCompletion'] = true;
         $app['dbs'] = $app->extend('dbs', function () { return $this->getDatabases(); });
