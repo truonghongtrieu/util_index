@@ -86,14 +86,7 @@ class IndexHelper
             $assessor->data = json_decode($assessor->data);
         }
 
-        if (empty($assessor->first_name)) {
-            $assessor->name = $assessor->last_name;
-        } elseif (empty($assessor->last_name)) {
-            $assessor->name = $assessor->first_name;
-        } else {
-            $assessor->name = "{$assessor->first_name} {$assessor->last_name}";
-        }
-
+        $assessor->name = trim (($assessor->first_name ?? '') . ' ' . ($assessor->last_name ?? ''));
         $assessor->avatar = isset($assessor->data->avatar->uri) ? $assessor->data->avatar->uri : null;
         unset($assessor->data);
 
