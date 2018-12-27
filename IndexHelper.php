@@ -78,6 +78,10 @@ class IndexHelper
             ->executeQuery('SELECT id, mail, first_name, last_name, data FROM gc_user WHERE id = ?', [$assessorId])
             ->fetch(DB::OBJ);
 
+        if (!$assessor) {
+            return null;
+        }
+
         if (isset($assessor->data) && is_scalar($assessor->data)) {
             $assessor->data = json_decode($assessor->data);
         }
