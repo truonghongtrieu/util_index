@@ -5,8 +5,8 @@ namespace go1\util_index\core;
 use Doctrine\DBAL\Connection;
 use go1\clients\LoClient;
 use go1\util\Country;
-use go1\util\lo\LoHelper;
 use stdClass;
+use RuntimeException;
 
 class EventFormatter
 {
@@ -21,8 +21,10 @@ class EventFormatter
 
     public function format(stdClass $lo, $portalId = null, $loTeaser = false)
     {
-        $lo = LoHelper::load($this->go1, $lo->id);
-        $event = json_decode(json_encode($lo->event), true);
+        if (!$event = json_decode(json_encode($lo->event), true)) {
+            throw new RuntimeException('Event not found');
+        }
+
         $location = $event['locations'][0] ?? [];
         $eventId = $event['id'] ?? false;
 
