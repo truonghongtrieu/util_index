@@ -7,6 +7,7 @@ use Elasticsearch\Client;
 use go1\util\Error;
 use go1\util\portal\PortalChecker;
 use go1\util\portal\PortalHelper;
+use go1\util\queue\Queue;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -35,6 +36,12 @@ class ConsumeMiddleware
     public function __invoke(Request $req)
     {
         $routingKey = $req->get('routingKey');
+        # Drop prefix if routingKey contains re-index prefix.
+        if (Queue::REINDEX_PREFIX == substr($routingKey, 0, 12)) {
+            $parsedRoutingKey = explode(Queue::REINDEX_PREFIX, $routingKey)[1];
+            $req->request->set('routingKey', $parsedRoutingKey);
+        }
+
         $body = $req->get('body');
         $body = is_scalar($body) ? json_decode($body) : json_decode(json_encode($body));
         if (!$body) {
