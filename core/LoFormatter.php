@@ -110,7 +110,7 @@ class LoFormatter
             'sharing'       => isset($lo->sharing) ? $lo->sharing : 0,
             'language'      => $lo->language,
             'instance_id'   => $lo->instance_id,
-            'locale'        => $lo->locale ? (is_scalar($lo->locale) ? Text::parseInlineTags($lo->locale) : $lo->locale) : [],
+            'locale'        => isset($lo->locale) ? (is_scalar($lo->locale) ? Text::parseInlineTags($lo->locale) : $lo->locale) : [],
             'title'         => $lo->title,
             'description'   => $lo->description,
             'tags'          => $tags,
