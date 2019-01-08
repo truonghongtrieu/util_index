@@ -159,7 +159,7 @@ class LoFormatter
                 ],
             ];
 
-            if (LiTypes::EVENT == $lo->type && !empty($lo->event)) {
+            if (LiTypes::EVENT == $lo->type && !empty((array)$lo->event)) {
                 $doc['event'] = $this->fEvent->format($lo, null, true);
             }
         }
