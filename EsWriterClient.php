@@ -49,6 +49,15 @@ class EsWriterClient
         $this->mqClient->publish(['uri' => $uri, 'body' => $params['body']], $this->routingKey);
     }
 
+    public function deleteByQuery($params)
+    {
+        $this->validate($params, 'index,type,body');
+
+        $uri = sprintf('/%s/%s/_delete_by_query', $params['index'], $params['type']);
+        isset($params['routing']) && $uri .= sprintf('?routing=%s', $params['routing']);
+        $this->mqClient->publish(['uri' => $uri, 'body' => $params['body']], $this->routingKey);
+    }
+
     public function index($params)
     {
         $this->create($params);
