@@ -5,6 +5,7 @@ namespace go1\util_index\core\consumer;
 use Elasticsearch\Common\Exceptions\ElasticsearchException;
 use Exception;
 use go1\core\lo\index\MicroService as LoIndexService;
+use go1\util\customer\CustomerEsSchema;
 use go1\util\enrolment\EnrolmentHelper;
 use go1\util\es\Schema;
 use go1\util\lo\LoHelper;
@@ -213,7 +214,7 @@ class LoConsumer extends LearningObjectBaseConsumer
                     ],
                 ]);
             } catch (ElasticsearchException $e) {
-                $this->history->write(Schema::O_USER, $user->id, $e->getCode(), $e->getMessage());
+                $this->history->write(CustomerEsSchema::O_USER, $user->id, $e->getCode(), $e->getMessage());
             }
         }
     }
@@ -232,7 +233,7 @@ class LoConsumer extends LearningObjectBaseConsumer
                     ],
                 ]);
             } catch (ElasticsearchException $e) {
-                $this->history->write(Schema::O_USER, $user->id, $e->getCode(), $e->getMessage());
+                $this->history->write(CustomerEsSchema::O_USER, $user->id, $e->getCode(), $e->getMessage());
             }
         }
     }

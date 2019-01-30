@@ -3,9 +3,9 @@
 namespace go1\util_index\core;
 
 use Doctrine\DBAL\Connection;
+use go1\util\customer\CustomerEsSchema;
 use go1\util\DateTime;
 use go1\util\eck\EckHelper;
-use go1\util\es\Schema;
 use go1\util\group\GroupHelper;
 use go1\util\group\GroupStatus;
 use go1\util\portal\PortalHelper;
@@ -74,7 +74,7 @@ class UserFormatter
 
         if ($this->accountsName !== $user->instance) {
             $doc['instance'] = $user->instance;
-            $entity = EckHelper::load($this->eck, $user->instance, Schema::O_ACCOUNT, $user->id);
+            $entity = EckHelper::load($this->eck, $user->instance, CustomerEsSchema::O_ACCOUNT, $user->id);
             $doc += $this->eckDataFormatter->format(json_decode(json_encode($entity)));
         }
 

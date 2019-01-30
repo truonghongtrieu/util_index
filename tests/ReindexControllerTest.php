@@ -475,7 +475,7 @@ class ReindexControllerTest extends IndexServiceTestCase
 
         $lo = $client->get(['type' => Schema::O_LO, 'id' => $this->loId, 'routing' => $this->portalId] + $base);
         $eckLo = $client->get(['type' => Schema::O_ECK_METADATA, 'id' => "$this->portalName:lo"] + $base);
-        $portal = $client->get(['type' => Schema::O_PORTAL, 'id' => $this->portalId] + $base);
+        $portal = $client->get(['type' => CustomerEsSchema::O_PORTAL, 'id' => $this->portalId] + $base);
         $eckUser = $client->get(['type' => Schema::O_ECK_METADATA, 'id' => "$this->portalName:account"] + $base);
         $event1Li = $client->get(['type' => Schema::O_EVENT, 'id' => "$this->liEventId1:$this->liEventId1", 'routing' => $this->portalId] + $base);
         $eventCourse = $client->get(['type' => Schema::O_EVENT, 'id' => "$this->courseEventId:$this->courseEventId", 'routing' => $this->portalId] + $base);
@@ -494,7 +494,7 @@ class ReindexControllerTest extends IndexServiceTestCase
             $enrolment = $client->get(['type' => Schema::O_ENROLMENT, 'id' => $enrolmentId, 'routing' => $this->portalId] + $base);
             $this->assertDocField($enrolmentId, $enrolment);
 
-            $accountEnrolment = $client->get(['type' => Schema::O_ACCOUNT_ENROLMENT, 'id' => $enrolmentId, 'routing' => $this->portalId] + $base);
+            $accountEnrolment = $client->get(['type' => CustomerEsSchema::O_ACCOUNT_ENROLMENT, 'id' => $enrolmentId, 'routing' => $this->portalId] + $base);
             $this->assertEquals($enrolmentId, $accountEnrolment['_source']['id']);
             $this->assertEquals(EnrolmentTypes::TYPE_ENROLMENT, $accountEnrolment['_source']['type']);
         }
@@ -506,7 +506,7 @@ class ReindexControllerTest extends IndexServiceTestCase
         $this->assertTransaction($client);
 
         foreach ($this->accountIds as $accountId) {
-            $account = $client->get(['type' => Schema::O_ACCOUNT, 'id' => $accountId, 'routing' => $this->portalId] + $base);
+            $account = $client->get(['type' => CustomerEsSchema::O_ACCOUNT, 'id' => $accountId, 'routing' => $this->portalId] + $base);
             $this->assertDocField($accountId, $account);
             $this->assertEquals(['bar', 'bar 2'], $account['_source']['fields_' . $this->portalId]['field_foo']['value_string']);
             $this->assertEquals([123, 234], $account['_source']['fields_' . $this->portalId]['field_baz']['value_integer']);
@@ -581,7 +581,7 @@ class ReindexControllerTest extends IndexServiceTestCase
             $this->assertEquals($esId, $enrolment['_id']);
             $this->assertEquals($awardEnrolmentId, $enrolment['_source']['id']);
 
-            $accountEnrolment = $client->get(['type' => Schema::O_ACCOUNT_ENROLMENT, 'id' => $esId, 'routing' => $this->portalId] + $base);
+            $accountEnrolment = $client->get(['type' => CustomerEsSchema::O_ACCOUNT_ENROLMENT, 'id' => $esId, 'routing' => $this->portalId] + $base);
             $this->assertEquals($esId, $accountEnrolment['_id']);
             $this->assertEquals($awardEnrolmentId, $accountEnrolment['_source']['id']);
             $this->assertEquals(EnrolmentTypes::TYPE_AWARD, $accountEnrolment['_source']['type']);
@@ -744,7 +744,7 @@ class ReindexControllerTest extends IndexServiceTestCase
 
         $lo = $client->get(['type' => Schema::O_LO, 'id' => $this->loId, 'routing' => $this->portalId] + $base);
         $configuration = $client->get($base + ['type' => Schema::O_CONFIG, 'id' => "$this->portalName:foo:$this->portalId"]);
-        //$portal = $client->get($base + ['type' => Schema::O_PORTAL, 'id' => $this->instanceId]);
+        //$portal = $client->get($base + ['type' => CustomerEsSchema::O_PORTAL, 'id' => $this->instanceId]);
         $eckUser = $client->get($base + ['type' => Schema::O_ECK_METADATA, 'id' => "$this->portalName:account"]);
         $eckLo = $client->get($base + ['type' => Schema::O_ECK_METADATA, 'id' => "$this->portalName:lo"]);
 
@@ -758,7 +758,7 @@ class ReindexControllerTest extends IndexServiceTestCase
             $enrolment = $client->get(['type' => Schema::O_ENROLMENT, 'id' => $enrolmentId, 'routing' => $this->portalId] + $base);
             $this->assertEquals($enrolmentId, $enrolment['_source']['id']);
 
-            $accountEnrolment = $client->get(['type' => Schema::O_ACCOUNT_ENROLMENT, 'id' => $enrolmentId, 'routing' => $this->portalId] + $base);
+            $accountEnrolment = $client->get(['type' => CustomerEsSchema::O_ACCOUNT_ENROLMENT, 'id' => $enrolmentId, 'routing' => $this->portalId] + $base);
             $this->assertEquals($enrolmentId, $accountEnrolment['_source']['id']);
             $this->assertEquals(EnrolmentTypes::TYPE_ENROLMENT, $accountEnrolment['_source']['type']);
         }
@@ -766,7 +766,7 @@ class ReindexControllerTest extends IndexServiceTestCase
         $this->assertTransaction($client);
 
         foreach ($this->accountIds as $accountId) {
-            $account = $client->get(['type' => Schema::O_ACCOUNT, 'id' => $accountId, 'routing' => $this->portalId] + $base);
+            $account = $client->get(['type' => CustomerEsSchema::O_ACCOUNT, 'id' => $accountId, 'routing' => $this->portalId] + $base);
             $this->assertEquals($accountId, $account['_source']['id']);
             $this->assertEquals(['bar', 'bar 2'], $account['_source']['fields_' . $this->portalId]['field_foo']['value_string']);
             $this->assertEquals([123, 234], $account['_source']['fields_' . $this->portalId]['field_baz']['value_integer']);
@@ -841,7 +841,7 @@ class ReindexControllerTest extends IndexServiceTestCase
             $this->assertEquals($esId, $enrolment['_id']);
             $this->assertEquals($awardEnrolmentId, $enrolment['_source']['id']);
 
-            $accountEnrolment = $client->get(['type' => Schema::O_ACCOUNT_ENROLMENT, 'id' => $esId, 'routing' => $this->portalId] + $base);
+            $accountEnrolment = $client->get(['type' => CustomerEsSchema::O_ACCOUNT_ENROLMENT, 'id' => $esId, 'routing' => $this->portalId] + $base);
             $this->assertEquals($esId, $accountEnrolment['_id']);
             $this->assertEquals($awardEnrolmentId, $accountEnrolment['_source']['id']);
             $this->assertEquals(EnrolmentTypes::TYPE_AWARD, $accountEnrolment['_source']['type']);

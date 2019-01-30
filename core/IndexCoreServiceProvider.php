@@ -2,11 +2,7 @@
 
 namespace go1\util_index\core;
 
-use go1\core\group\group_schema\v1\repository\GroupAssignmentRepository;
-use go1\core\group\group_schema\v1\repository\GroupMembershipRepository;
-use go1\core\learning_record\enrolment\index\consumer\EnrolmentAssessorConsumer;
 use go1\util\location\LocationRepository;
-use go1\util_index\core\consumer\EnrolmentConsumer;
 use go1\util_index\core\consumer\LoConsumer;
 use go1\util_index\core\consumer\TaskConsumer;
 use Pimple\Container;
@@ -91,23 +87,6 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
             $reflection = new ReflectionClass(LoConsumer::class);
 
             return $reflection->newInstanceArgs($c['consumer.lo.arguments']);
-        };
-
-        $c['consumer.enrolment'] = function (Container $c) {
-            return new EnrolmentConsumer(
-                $c['go1.client.es_writer'],
-                $c['history.repository'],
-                $c['dbs']['default'],
-                $c['dbs']['go1_write'],
-                $c['dbs']['social_write'] ?? null,
-                $c['accounts_name'],
-                $c['formatter.enrolment'],
-                $c['formatter.lo'],
-                $c['formatter.user'],
-                $c['formatter.eck_data'],
-                $c['waitForCompletion'],
-                $c['repository.es']
-            );
         };
 
         $c['consumer.task'] = function (Container $c) {
