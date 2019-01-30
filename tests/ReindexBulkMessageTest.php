@@ -51,7 +51,7 @@ class ReindexBulkMessageTest extends IndexServiceTestCase
         $task = $repo->load($taskId);
 
         $this->client($app)->indices()->refresh(['index' => Schema::INDEX]);
-        $result = $this->client($app)->count(['index' => Schema::INDEX, 'type' => Schema::O_ACCOUNT]);
+        $result = $this->client($app)->count(['index' => Schema::INDEX, 'type' => CustomerEsSchema::O_ACCOUNT]);
         $this->assertEquals(100, $task->percent);
         $this->assertEquals(Task::FINISHED, $task->status);
         $this->assertEquals(150, $result['count']);

@@ -33,7 +33,7 @@ class ReindexDataCleanupConsumerTest extends PortalReIndexTest
         $base = ['routing' => $this->portalId, 'instance_id' => $this->portalId];
         $this->createEsLo($client, ['id' => 200, 'updated_at' => $time + 3] + $base);
         $this->createEsEnrolment($client, ['id' => 300, 'updated_at' => $time + 3] + $base);
-        $this->createEsUser($client, ['id' => 400, 'type' => Schema::O_ACCOUNT, 'updated_at' => $time + 3] + $base);
+        $this->createEsUser($client, ['id' => 400, 'type' => CustomerEsSchema::O_ACCOUNT, 'updated_at' => $time + 3] + $base);
         $this->createEsEvent($client, ['id' => 500, 'updated_at' => $time + 3, 'parent' => ['id' => 1]] + $base);
 
         $response = $client->search(['index' => Schema::portalIndex($this->portalId), '_source' => false]);
