@@ -67,7 +67,7 @@ class TaskController
         $index = $req->get('index', Schema::INDEX);
         $handlers = $req->get('handlers');
         $execute = $req->get('execute', true);
-        $alias = $req->get('alias', true);
+        $alias = $req->get('alias', false);
         $maxNumItems = $req->get('max_num_items', null);
         $maxNumItems = is_null($maxNumItems) ? $maxNumItems : intval($maxNumItems);
         $portalName = $req->get('instance', null);
