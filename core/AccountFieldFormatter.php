@@ -24,7 +24,7 @@ class AccountFieldFormatter
             return [];
         }
 
-        $metadata = EckHelper::metadata($this->eck, $entity->instance, $entity->entity_type);
+        $metadata = EckHelper::metadata($this->eck, $entity->instance, $entity->entity_type, true, false);
         $fields = [];
         foreach ($entity as $fieldName => $values) {
             if (in_array($fieldName, ['instance', 'entity_type', 'id']) || !is_array($values)) {
