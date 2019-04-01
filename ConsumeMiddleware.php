@@ -48,6 +48,12 @@ class ConsumeMiddleware
             return null;
         }
 
+        if (!is_object($body)) {
+            $this->logger->error(sprintf('index.consume skip bad message payload %s: %s', $routingKey, json_encode($body)));
+
+            return Error::simpleErrorJsonResponse(null, 204);
+        }
+
         $portalId = $body->taken_instance_id ?? $body->instance_id ?? $body->instance ?? null;
         if (0 === $portalId) {
             $this->logger->error(sprintf('index.consume skip bad message %s: %s', $routingKey, json_encode($body)));
