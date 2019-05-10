@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use go1\util\DB;
 use go1\util\es\Schema;
 use go1\util\model\User;
+use go1\util\portal\PortalHelper;
 use stdClass;
 
 class IndexHelper
@@ -67,7 +68,7 @@ class IndexHelper
         return false;
     }
 
-    public static function firstAssessor(Connection $db, array $assessorIds)
+    public static function firstAssessor(Connection $db, array $assessorIds, int $portalId = null)
     {
         if (!$assessorIds) {
             return null;
@@ -80,6 +81,14 @@ class IndexHelper
 
         if (!$assessor) {
             return null;
+        }
+
+        if ($portalId && $portal = PortalHelper::load($db, $portalId, 'title')) {
+            $assessorAccount = 'SELECT id, mail, first_name, last_name, data FROM gc_accounts WHERE instance = ? AND mail = ?';
+            $assessorAccount = $db
+                ->executeQuery($assessorAccount, [$portal->title, $assessor->mail])
+                ->fetch(DB::OBJ);
+            $assessor = $assessorAccount ?: $assessor;
         }
 
         if (isset($assessor->data) && is_scalar($assessor->data)) {

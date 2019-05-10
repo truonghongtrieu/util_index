@@ -147,7 +147,7 @@ class EnrolmentFormatter
             'lo'                  => $formattedLo ?: null,
             'account'             => $account ?: null,
             'parent_lo'           => isset($enrolment->parent_lo_id) ? $this->parentLo($enrolment->parent_lo_id) : null,
-            'assessor'            => $isCourse ? $this->assessor($assessors) : null,
+            'assessor'            => $isCourse ? $this->assessor($assessors, $lo->instance_id) : null,
             'is_assigned'         => $isAssigned,
             'progress'            => $progress,
             'certificates'        => $certificates,
@@ -282,9 +282,9 @@ class EnrolmentFormatter
         return null;
     }
 
-    public function assessor(array $assessors)
+    public function assessor(array $assessors, int $portalId)
     {
-        return IndexHelper::firstAssessor($this->go1, $assessors);
+        return IndexHelper::firstAssessor($this->go1, $assessors, $portalId);
     }
 
     private function getEnrolmentLastStatus(stdClass $enrolment): string
