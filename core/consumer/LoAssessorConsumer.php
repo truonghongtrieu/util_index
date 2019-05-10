@@ -76,6 +76,7 @@ class LoAssessorConsumer implements ServiceConsumerInterface
     {
         $courseId = $body->id;
         $assessors = LoHelper::assessorIds($this->go1, $courseId);
+        $lo = LoHelper::load($this->go1, $courseId);
         try {
             $this->es->updateByQuery([
                 'index'               => Schema::INDEX,
@@ -88,7 +89,7 @@ class LoAssessorConsumer implements ServiceConsumerInterface
                             "ctx._source.assessors = params.assessors",
                         ]),
                         'params' => [
-                            'assessor'  => $this->enrolmentFormatter->assessor($assessors),
+                            'assessor'  => $this->enrolmentFormatter->assessor($assessors, $lo->instance_id ?? null),
                             'assessors' => $assessors,
                         ],
                     ],
