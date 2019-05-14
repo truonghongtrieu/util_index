@@ -6,8 +6,6 @@ use Doctrine\DBAL\Connection;
 use go1\util\customer\CustomerEsSchema;
 use go1\util\DateTime;
 use go1\util\eck\EckHelper;
-use go1\util\group\GroupHelper;
-use go1\util\group\GroupStatus;
 use go1\util\portal\PortalHelper;
 use go1\util\user\ManagerHelper;
 use go1\util\user\UserHelper;
@@ -16,7 +14,6 @@ use stdClass;
 class UserFormatter
 {
     private $go1;
-    private $social;
     private $eck;
     private $accountsName;
     private $eckDataFormatter;
@@ -24,13 +21,11 @@ class UserFormatter
 
     public function __construct(
         Connection $go1,
-        ?Connection $social,
         ?Connection $eck,
         string $accountsName,
         AccountFieldFormatter $eckDataFormatter
     ) {
         $this->go1 = $go1;
-        $this->social = $social;
         $this->eck = $eck;
         $this->accountsName = $accountsName;
         $this->eckDataFormatter = $eckDataFormatter;
@@ -89,10 +84,6 @@ class UserFormatter
 
             if ($this->accountsName !== $user->instance) {
                 $portalId = PortalHelper::idFromName($this->go1, $user->instance);
-
-                if ($this->social) {
-                    $doc['groups'] = GroupHelper::userGroups($this->go1, $this->social, $portalId, $user->id, $this->accountsName, GroupStatus::ARCHIVED);
-                }
 
                 $doc['managers'] = $this->formatManagers($user->id);
                 $doc['metadata'] = [
