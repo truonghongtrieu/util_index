@@ -28,7 +28,6 @@ class IndexCoreServiceProvider implements ServiceProviderInterface, BootableProv
         $c['formatter.user'] = function (Container $c) {
             return new UserFormatter(
                 $c['dbs']['go1'],
-                $c['dbs']['social'] ?? null,
                 $c['dbs']['eck'] ?? null,
                 $c['accounts_name'],
                 $c['formatter.eck_data']
