@@ -110,6 +110,7 @@ class LoFormatter
             'sharing'       => isset($lo->sharing) ? $lo->sharing : 0,
             'language'      => $lo->language,
             'instance_id'   => $lo->instance_id,
+            'portal_name'   => $portal ? $this->portalChecker->getSiteName($portal) : '',
             'locale'        => isset($lo->locale) ? (is_scalar($lo->locale) ? Text::parseInlineTags($lo->locale) : $lo->locale) : [],
             'title'         => $lo->title,
             'description'   => $lo->description,
@@ -141,7 +142,6 @@ class LoFormatter
         if (!$teaser) {
             $parentIds = array_values(LoHelper::parentIds($this->go1, $lo->id));
             $doc += [
-                'portal_name'     => $portal ? $this->portalChecker->getSiteName($portal) : '',
                 'assessors'       => LoHelper::assessorIds($this->go1, $lo->id),
                 'authors'         => $this->getAuthors($this->go1, $lo->id),
                 'allow_enrolment' => EnrolmentAllowTypes::toNumeric($lo->data->{LoHelper::ENROLMENT_ALLOW} ?? EnrolmentAllowTypes::DEFAULT),
