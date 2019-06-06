@@ -78,7 +78,6 @@ class UserFormatter
         if (!$teaser) {
             $doc += [
                 'roles'    => $this->userHelper->userRoles($this->go1, $user->id, $user->instance),
-                'groups'   => [],
                 'managers' => [],
             ];
 
