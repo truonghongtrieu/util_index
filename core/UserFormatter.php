@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use go1\util\customer\CustomerEsSchema;
 use go1\util\DateTime;
 use go1\util\eck\EckHelper;
+use go1\util\group\GroupHelper;
 use go1\util\portal\PortalHelper;
 use go1\util\user\ManagerHelper;
 use go1\util\user\UserHelper;
