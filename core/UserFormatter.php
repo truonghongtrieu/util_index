@@ -14,6 +14,7 @@ use stdClass;
 class UserFormatter
 {
     private $go1;
+    private $group;
     private $eck;
     private $accountsName;
     private $eckDataFormatter;
@@ -21,11 +22,13 @@ class UserFormatter
 
     public function __construct(
         Connection $go1,
+        ?Connection $group,
         ?Connection $eck,
         string $accountsName,
         AccountFieldFormatter $eckDataFormatter
     ) {
         $this->go1 = $go1;
+        $this->group = $group;
         $this->eck = $eck;
         $this->accountsName = $accountsName;
         $this->eckDataFormatter = $eckDataFormatter;
@@ -83,6 +86,10 @@ class UserFormatter
 
             if ($this->accountsName !== $user->instance) {
                 $portalId = PortalHelper::idFromName($this->go1, $user->instance);
+
+                if ($this->group) {
+                    $doc['groups'] = GroupHelper::userGroupTitles($this->group, $portalId, $user->id);
+                }
 
                 $doc['managers'] = $this->formatManagers($user->id);
                 $doc['metadata'] = [
