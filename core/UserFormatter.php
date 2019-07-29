@@ -38,9 +38,7 @@ class UserFormatter
 
     public function formatManagers(int $accountId)
     {
-        return array_map(function ($managerId) {
-            return intval($managerId);
-        }, ManagerHelper::userManagerIds($this->go1, $accountId));
+        return array_map('intval', ManagerHelper::userManagerIds($this->go1, $accountId));
     }
 
     public function format(stdClass $user, $teaser = false)
