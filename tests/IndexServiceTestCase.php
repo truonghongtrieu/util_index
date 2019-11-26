@@ -108,6 +108,10 @@ abstract class IndexServiceTestCase extends TestCase
             return $app['go1.client.es'];
         });
 
+        $app->extend('go1.client.es_writer_reindex', function () use ($app) {
+            return $app['go1.client.es'];
+        });
+
         $this->appInstall($app);
 
         return $app;

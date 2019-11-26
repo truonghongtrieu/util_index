@@ -31,6 +31,10 @@ class IndexServiceProvider implements ServiceProviderInterface, BootableProvider
             return new EsWriterClient($c['go1.client.mq'], $c['esWriterRoutingKey']);
         };
 
+        $c['go1.client.es_writer_reindex'] = function (Container $c) {
+            return new EsWriterClient($c['go1.client.mq'], $c['esWriterReindexRoutingKey']);
+        };
+
         $c['task.repository'] = function (Container $c) {
             return new TaskRepository(
                 $c['dbs']['default'],
