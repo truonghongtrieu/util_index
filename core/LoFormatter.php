@@ -114,6 +114,7 @@ class LoFormatter
             'locale'        => isset($lo->locale) ? (is_scalar($lo->locale) ? Text::parseInlineTags($lo->locale) : $lo->locale) : [],
             'title'         => $lo->title,
             'description'   => $lo->description,
+            'summary'       => $lo->summary,
             'tags'          => $tags,
             'image'         => is_string($image) ? str_replace('public://', "https://{$this->accountsName}/files/", $image) : '',
             'pricing'       => [
